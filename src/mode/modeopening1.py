@@ -1,43 +1,32 @@
-import pygame
 import jovialengine
 
 import constants
-#from .modeopening1 import ModeOpening1
 from .modeopening import ModeOpening
 
 
-class ModeOpening0(ModeOpening):
-    _LOGO_TEXT = "JovialKnoll"
-
+class ModeOpening1(ModeOpening):
     __slots__ = (
-        '_time',
     )
 
     def __init__(self):
         super().__init__()
-        self._time = 0
         self._background.fill(constants.WHITE)
         jovialengine.shared.font_wrap.renderToCentered(
             self._background,
-            (constants.SCREEN_SIZE[0] // 2, constants.SCREEN_SIZE[1] * 5 // 8),
-            self._LOGO_TEXT,
+            (constants.SCREEN_SIZE[0] // 2, constants.SCREEN_SIZE[1] // 2 + constants.FONT_SIZE // 2),
+            "press any key to start",
             False,
             constants.BLACK
         )
-        logo = pygame.image.load(constants.JK_LOGO_BLACK).convert()
-        self._background.blit(
-            logo,
-            (
-                constants.SCREEN_SIZE[0] // 2 - logo.get_width() // 2,
-                constants.SCREEN_SIZE[1] * 7 // 16 - logo.get_height() // 2,
-            )
+        version_width = len(constants.VERSION) * constants.FONT_SIZE
+        jovialengine.shared.font_wrap.renderToInside(
+            self._background,
+            (constants.SCREEN_SIZE[0] - version_width, constants.SCREEN_SIZE[1] - constants.FONT_HEIGHT),
+            version_width,
+            constants.VERSION,
+            False,
+            constants.BLACK
         )
 
     def _switchMode(self):
-        self.next_mode = None#ModeOpening0()
-
-    def _update(self, dt):
-        self._time += dt
-        if self._time >= 2000:
-            self._stopMixer()
-            self._switchMode()
+        self.next_mode = None

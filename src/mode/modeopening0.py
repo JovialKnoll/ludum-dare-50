@@ -2,8 +2,8 @@ import pygame
 import jovialengine
 
 import constants
-#from .modeopening1 import ModeOpening1
 from .modeopening import ModeOpening
+from .modeopening1 import ModeOpening1
 
 
 class ModeOpening0(ModeOpening):
@@ -34,10 +34,10 @@ class ModeOpening0(ModeOpening):
         )
 
     def _switchMode(self):
-        self.next_mode = None#ModeOpening0()
+        self.next_mode = ModeOpening1()
 
     def _update(self, dt):
         self._time += dt
-        if self._time >= 2000:
+        if self._time >= 1500:
             self._stopMixer()
             self._switchMode()
