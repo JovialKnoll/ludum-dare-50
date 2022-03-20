@@ -19,7 +19,7 @@ class ModeOpening1(ModeOpening):
             constants.BLACK
         )
         title_font = pygame.font.Font(constants.TITLE_FONT, int(constants.FONT_SIZE * 1.5))
-        title_font_wrap = jovialengine.FontWrap(title_font)
+        title_font_wrap = jovialengine.FontWrap(title_font, False)
         title_font_wrap.renderToCentered(
             self._background,
             (constants.SCREEN_SIZE[0] // 2, constants.SCREEN_SIZE[1] // 4),
