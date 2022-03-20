@@ -26,13 +26,14 @@ class ModeOpening1(ModeOpening):
             constants.TITLE,
             constants.BLACK
         )
-        version_width = len(constants.VERSION) * constants.FONT_SIZE
+        version_width = jovialengine.shared.font_wrap.font.size(constants.VERSION)[0]
         jovialengine.shared.font_wrap.renderToInside(
             self._background,
-            (constants.SCREEN_SIZE[0] - version_width, constants.SCREEN_SIZE[1] - constants.FONT_HEIGHT),
+            (constants.SCREEN_SIZE[0] - version_width - 4, constants.SCREEN_SIZE[1] - constants.FONT_HEIGHT),
             version_width,
             constants.VERSION,
-            constants.BLACK
+            constants.BLACK,
+            constants.WHITE
         )
 
     def _switchMode(self):
