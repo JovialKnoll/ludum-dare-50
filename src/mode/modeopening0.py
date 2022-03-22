@@ -21,7 +21,8 @@ class ModeOpening0(ModeOpening):
             self._background,
             (constants.SCREEN_SIZE[0] // 2, constants.SCREEN_SIZE[1] * 5 // 8),
             self._LOGO_TEXT,
-            constants.BLACK
+            constants.BLACK,
+            constants.WHITE
         )
         logo = pygame.image.load(constants.JK_LOGO_BLACK).convert()
         self._background.blit(
