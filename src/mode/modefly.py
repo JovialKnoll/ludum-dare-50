@@ -214,13 +214,13 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._bar_shake_timer = None
         if self._bar_shake_timer is None:
             if self._charge >= 0.75:
-                self._bar_shake_timer = 40#25
+                self._bar_shake_timer = 40
                 self._setShake()
             elif self._charge >= 0.5:
-                self._bar_shake_timer = 80#50
+                self._bar_shake_timer = 80
                 self._setShake()
             elif self._charge >= 0.25:
-                self._bar_shake_timer = 160#100
+                self._bar_shake_timer = 160
                 self._setShake()
             else:
                 self._bar_shake = (0, 0)
