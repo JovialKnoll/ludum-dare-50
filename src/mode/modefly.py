@@ -19,7 +19,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_BORDER_COLOR = (15, 15, 25)
     BAR_EMPTY_COLOR = (4, 6, 8)
     BASE_CHARGE_SPEED = 1 / 16000
-    BASE_CHARGE_SLOWDOWN_TIME = 250
+    BASE_CHARGE_SLOWDOWN_TIME = 1000
     STAR_DELAY = 200
     STAR_DISTANCE = SPACE_WIDTH + SPACE_BORDER * 2
     BACKGROUND_TIME = 16000
@@ -155,10 +155,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_x = float(self._player_ship.rect.x)
         self._player_y = float(self._player_ship.rect.y)
 
-    def _resetPlayerChargeSlowdown(self):
-        self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
-        #if self._charge
-
     def _input(self, event: pygame.event.Event):
         if event.type == pygame.KEYDOWN:
             if event.key in self.KEYS_LEFT:
@@ -170,7 +166,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             elif event.key in self.KEYS_DOWN:
                 self._player_input['down'] = 1
             elif event.key in self.KEYS_HOLD:
-                self._resetPlayerChargeSlowdown()
+                self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
         elif event.type == pygame.KEYUP:
             if event.key in self.KEYS_LEFT:
                 self._player_input['left'] = 0
@@ -209,7 +205,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             elif event.value[1] == -1:
                 self._player_input['down'] = 1
         elif event.type == pygame.JOYBUTTONDOWN:
-            self._resetPlayerChargeSlowdown()
+            self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
 
     def _makeStar(self, x):
         star_sprite_0 = jovialengine.AnimSprite()
@@ -254,8 +250,39 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_timer -= dt
         self._star_sprites_0.update(dt)
         self._star_sprites_1.update(dt)
+        if self._player_ship.stillAnimating():
+            # can only do player movement after it animated into place
+            return
         # charge slowdown
         self._player_charge_slowdown_timer -= dt
+        self._player_charge_slowdown_timer = max(0, self._player_charge_slowdown_timer)
+        # charging
+        charging_amount = 0
+        threshold = 0
+        shake_timer_reset = 0
+        if self._charge < 0.25:
+            charging_amount = dt * self.BASE_CHARGE_SPEED / 2
+            threshold = 0.25
+            shake_timer_reset = 800
+        elif self._charge < 0.5:
+            charging_amount = dt * self.BASE_CHARGE_SPEED
+            threshold = 0.5
+            shake_timer_reset = 400
+        elif self._charge < 0.75:
+            charging_amount = dt * self.BASE_CHARGE_SPEED
+            threshold = 0.75
+            shake_timer_reset = 200
+        elif self._charge < 1.0:
+            charging_amount = dt * self.BASE_CHARGE_SPEED
+            threshold = 1.0
+            shake_timer_reset = 100
+        if self._player_charge_slowdown_timer / self.BASE_CHARGE_SLOWDOWN_TIME >= threshold:
+            charging_amount /= 2
+            shake_timer_reset *= 2
+        elif self._player_charge_slowdown_timer > 0:
+            charging_amount *= 3/4
+            shake_timer_reset = shake_timer_reset + shake_timer_reset // 2
+        self._charge = min(1.0, self._charge + charging_amount)
         # bar shaking
         if self._bar_shake_timer is not None:
             if self._bar_shake_timer > 0:
@@ -266,16 +293,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if self._charge < 0.25:
                 self._bar_shake = (0, 0)
             else:
-                if self._charge < 0.5:
-                    self._bar_shake_timer = 200 if self._player_charge_slowdown_timer > 0 else 160
-                elif self._charge < 0.75:
-                    self._bar_shake_timer = 100 if self._player_charge_slowdown_timer > 0 else 80
-                elif self._charge < 1.0:
-                    self._bar_shake_timer = 50 if self._player_charge_slowdown_timer > 0 else 40
+                self._bar_shake_timer = shake_timer_reset
                 self._setShake()
-        if self._player_ship.stillAnimating():
-            # can only do player movement after it animated into place
-            return
         # player movement
         # apply accel or decel based on input
         x_input = self._player_input['right'] - self._player_input['left']
@@ -332,17 +351,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # apply position to player rect
         self._player_ship.rect.x = int(self._player_x)
         self._player_ship.rect.y = int(self._player_y)
-        # charging
-        if self._charge < 0.25:
-            self._charge += dt * self.BASE_CHARGE_SPEED / 2
-        elif self._charge < 0.5:
-            self._charge += dt * self.BASE_CHARGE_SPEED
-        elif self._charge < 0.75:
-            self._charge += dt * self.BASE_CHARGE_SPEED
-        elif self._charge < 1.0:
-            self._charge += dt * self.BASE_CHARGE_SPEED
-        else:
-            self._charge = 1.0
 
     def _updatePreDraw(self, screen: pygame.surface.Surface):
         # star one-per-frame updates
@@ -389,6 +397,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
                 constants.SCREEN_SIZE[0],
                 self.BAR_BORDER_HEIGHT
+            )
+        )
+        # slowdown bar
+        screen.fill(
+            (0, 220, 0),
+            (
+                self.BAR_OFFSET + self._bar_shake[0],
+                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1] - 1,
+                self.BAR_WIDTH * self._player_charge_slowdown_timer / self.BASE_CHARGE_SLOWDOWN_TIME,
+                self.BAR_HEIGHT + 2
             )
         )
         # unfilled bar
