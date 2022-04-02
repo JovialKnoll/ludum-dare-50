@@ -72,12 +72,12 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         pygame.K_y,
         pygame.K_z,
     }
-    X_ACCEL = 64 / 1000
-    X_DECEL = X_ACCEL * 4
+    X_ACCEL = 64 / 1000 / 125
     X_SPEED_MAX = 256 / 1000
-    Y_ACCEL = 48 / 1000
-    Y_DECEL = Y_ACCEL * 4
+    X_DECEL = X_SPEED_MAX
+    Y_ACCEL = 64 / 1000 / 125
     Y_SPEED_MAX = 192 / 1000
+    Y_DECEL = X_DECEL
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -132,7 +132,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_ship.rect.midleft = (-self.SPACE_BORDER, self.SPACE_HEIGHT // 2)
         self._player_ship.addPosRel(
             jovialengine.AnimSprite.DecSpeed,
-            1000,
+            500,
             (self.SPACE_BORDER * 5, 0),
             callback=self._syncPos
         )
@@ -247,8 +247,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # player movement
         # apply accel or decel based on input
         x_input = self._player_input['right'] - self._player_input['left']
+        x_decel = self.X_DECEL * dt
         if x_input == 0:
-            x_decel = self.X_DECEL * dt
             if self._player_vel_x > x_decel:
                 self._player_vel_x -= x_decel
             elif self._player_vel_x < -x_decel:
@@ -256,10 +256,14 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             else:
                 self._player_vel_x = 0.0
         else:
+            if x_input == -1 and self._player_vel_x > 0:
+                self._player_vel_x = max(0.0, self._player_vel_x - x_decel)
+            elif x_input == 1 and self._player_vel_x < 0:
+                self._player_vel_x = min(0.0, self._player_vel_x + x_decel)
             self._player_vel_x += x_input * self.X_ACCEL * dt
         y_input = self._player_input['down'] - self._player_input['up']
+        y_decel = self.Y_DECEL * dt
         if y_input == 0:
-            y_decel = self.Y_DECEL * dt
             if self._player_vel_y > y_decel:
                 self._player_vel_y -= y_decel
             elif self._player_vel_y < -y_decel:
@@ -267,7 +271,11 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             else:
                 self._player_vel_y = 0.0
         else:
-            self._player_vel_y += (self._player_input['down'] - self._player_input['up']) * self.Y_ACCEL * dt
+            if y_input == -1 and self._player_vel_y > 0:
+                self._player_vel_y = max(0.0, self._player_vel_y - y_decel)
+            elif y_input == 1 and self._player_vel_y < 0:
+                self._player_vel_y = min(0.0, self._player_vel_y + y_decel)
+            self._player_vel_y += y_input * self.Y_ACCEL * dt
         # cap velocity
         self._player_vel_x = max(-self.X_SPEED_MAX, min(self.X_SPEED_MAX, self._player_vel_x))
         self._player_vel_y = max(-self.Y_SPEED_MAX, min(self.Y_SPEED_MAX, self._player_vel_y))
