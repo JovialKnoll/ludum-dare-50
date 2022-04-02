@@ -13,6 +13,7 @@ class ModeOpening(jovialengine.ModeBase, abc.ABC):
 
     def _input(self, event):
         if event.type == pygame.KEYDOWN \
+            or event.type == pygame.JOYBUTTONDOWN \
             or (
                 event.type == pygame.MOUSEBUTTONUP
                 and event.button == 1

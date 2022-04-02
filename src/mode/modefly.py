@@ -155,7 +155,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_x = float(self._player_ship.rect.x)
         self._player_y = float(self._player_ship.rect.y)
 
-    def _input(self, event: pygame.event.Event):
+    def _input(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key in self.KEYS_LEFT:
                 self._player_input['left'] = 1
@@ -245,7 +245,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             self._current_shake = random.choice(possible_shakes)
             self._bar_shake = self.SHAKES[self._current_shake]
 
-    def _update(self, dt: int):
+    def _update(self, dt):
         # background stars
         self._star_timer -= dt
         self._star_sprites_0.update(dt)
@@ -352,7 +352,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_ship.rect.x = int(self._player_x)
         self._player_ship.rect.y = int(self._player_y)
 
-    def _updatePreDraw(self, screen: pygame.surface.Surface):
+    def _updatePreDraw(self, screen):
         # star one-per-frame updates
         if self._star_timer <= 0:
             for sprite in self._star_sprites_0:
@@ -364,11 +364,11 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             self._star_timer = self.STAR_DELAY
             self._makeStar(self.SPACE_WIDTH)
 
-    def _drawPreSprites(self, screen: pygame.surface.Surface):
+    def _drawPreSprites(self, screen):
         self._star_sprites_0.draw(screen)
         self._star_sprites_1.draw(screen)
 
-    def _drawPostSprites(self, screen: pygame.surface.Surface):
+    def _drawPostSprites(self, screen):
         pass
 
     def _drawBarMarks(self, screen: pygame.surface.Surface, color, pos_x: int, width: int):
@@ -388,7 +388,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         bar_color = (bar_color_component, 0, 255 - bar_color_component)
         return bar_color
 
-    def _drawPostCamera(self, screen: pygame.surface.Surface):
+    def _drawPostCamera(self, screen):
         # bar border
         screen.fill(
             self.BAR_BORDER_COLOR,
