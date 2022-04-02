@@ -33,46 +33,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     KEYS_RIGHT = {pygame.K_RIGHT, pygame.K_d}
     KEYS_UP = {pygame.K_UP, pygame.K_w}
     KEYS_DOWN = {pygame.K_DOWN, pygame.K_s}
-    KEYS_HOLD = {
-        pygame.K_SPACE,
-        pygame.K_RETURN,
-        pygame.K_0,
-        pygame.K_1,
-        pygame.K_2,
-        pygame.K_3,
-        pygame.K_4,
-        pygame.K_5,
-        pygame.K_6,
-        pygame.K_7,
-        pygame.K_8,
-        pygame.K_9,
-        # pygame.K_a,
-        pygame.K_b,
-        pygame.K_c,
-        # pygame.K_d,
-        pygame.K_e,
-        pygame.K_f,
-        pygame.K_g,
-        pygame.K_h,
-        pygame.K_i,
-        pygame.K_j,
-        pygame.K_k,
-        pygame.K_l,
-        pygame.K_m,
-        pygame.K_n,
-        pygame.K_o,
-        pygame.K_p,
-        pygame.K_q,
-        pygame.K_r,
-        # pygame.K_s,
-        pygame.K_t,
-        pygame.K_u,
-        pygame.K_v,
-        # pygame.K_w,
-        pygame.K_x,
-        pygame.K_y,
-        pygame.K_z,
-    }
     X_ACCEL = 64 / 1000 / 125
     X_SPEED_MAX = 320 / 1000
     X_DECEL = X_SPEED_MAX / 125
@@ -91,6 +51,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_charge',
         '_player_ship',
         '_player_input',
+        '_prev_x_input',
+        '_prev_y_input',
         '_player_vel_x',
         '_player_vel_y',
         '_player_x',
@@ -145,6 +107,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             'up': 0,
             'down': 0,
         }
+        self._prev_x_input = 0
+        self._prev_y_input = 0
         self._player_vel_x = 0.0
         self._player_vel_y = 0.0
         self._player_x = 0
@@ -165,8 +129,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_input['up'] = 1
             elif event.key in self.KEYS_DOWN:
                 self._player_input['down'] = 1
-            elif event.key in self.KEYS_HOLD:
-                self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
         elif event.type == pygame.KEYUP:
             if event.key in self.KEYS_LEFT:
                 self._player_input['left'] = 0
@@ -204,8 +166,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_input['up'] = 1
             elif event.value[1] == -1:
                 self._player_input['down'] = 1
-        elif event.type == pygame.JOYBUTTONDOWN:
-            self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
 
     def _makeStar(self, x):
         star_sprite_0 = jovialengine.AnimSprite()
@@ -253,6 +213,66 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         if self._player_ship.stillAnimating():
             # can only do player movement after it animated into place
             return
+        # player movement
+        # apply accel or decel based on input
+        x_input = self._player_input['right'] - self._player_input['left']
+        x_decel = self.X_DECEL * dt
+        if x_input == 0:
+            if self._player_vel_x > x_decel:
+                self._player_vel_x -= x_decel
+            elif self._player_vel_x < -x_decel:
+                self._player_vel_x += x_decel
+            else:
+                self._player_vel_x = 0.0
+        else:
+            if x_input == -1 and self._player_vel_x > 0:
+                self._player_vel_x = max(0.0, self._player_vel_x - x_decel)
+            elif x_input == 1 and self._player_vel_x < 0:
+                self._player_vel_x = min(0.0, self._player_vel_x + x_decel)
+            self._player_vel_x += x_input * self.X_ACCEL * dt
+        y_input = self._player_input['down'] - self._player_input['up']
+        y_decel = self.Y_DECEL * dt
+        if y_input == 0:
+            if self._player_vel_y > y_decel:
+                self._player_vel_y -= y_decel
+            elif self._player_vel_y < -y_decel:
+                self._player_vel_y += y_decel
+            else:
+                self._player_vel_y = 0.0
+        else:
+            if y_input == -1 and self._player_vel_y > 0:
+                self._player_vel_y = max(0.0, self._player_vel_y - y_decel)
+            elif y_input == 1 and self._player_vel_y < 0:
+                self._player_vel_y = min(0.0, self._player_vel_y + y_decel)
+            self._player_vel_y += y_input * self.Y_ACCEL * dt
+        if self._prev_x_input != x_input or self._prev_y_input != y_input:
+            self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
+            self._prev_x_input = x_input
+            self._prev_y_input = y_input
+        # cap velocity
+        self._player_vel_x = max(-self.X_SPEED_MAX, min(self.X_SPEED_MAX, self._player_vel_x))
+        self._player_vel_y = max(-self.Y_SPEED_MAX, min(self.Y_SPEED_MAX, self._player_vel_y))
+        # apply velocity
+        self._player_x += self._player_vel_x * dt
+        self._player_y += self._player_vel_y * dt
+        # cap position
+        self._player_x = max(
+            self.SPACE_BORDER,
+            min(
+                self.SPACE_WIDTH - self.SPACE_BORDER - self._player_ship.rect.width,
+                self._player_x
+            )
+        )
+        self._player_y = max(
+            self.SPACE_BORDER,
+            min(
+                self.SPACE_HEIGHT - self.SPACE_BORDER - self._player_ship.rect.height,
+                self._player_y
+            )
+        )
+        # apply position to player rect
+        self._player_ship.rect.x = int(self._player_x)
+        self._player_ship.rect.y = int(self._player_y)
         # charge slowdown
         self._player_charge_slowdown_timer -= dt
         self._player_charge_slowdown_timer = max(0, self._player_charge_slowdown_timer)
@@ -295,62 +315,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             else:
                 self._bar_shake_timer = shake_timer_reset
                 self._setShake()
-        # player movement
-        # apply accel or decel based on input
-        x_input = self._player_input['right'] - self._player_input['left']
-        x_decel = self.X_DECEL * dt
-        if x_input == 0:
-            if self._player_vel_x > x_decel:
-                self._player_vel_x -= x_decel
-            elif self._player_vel_x < -x_decel:
-                self._player_vel_x += x_decel
-            else:
-                self._player_vel_x = 0.0
-        else:
-            if x_input == -1 and self._player_vel_x > 0:
-                self._player_vel_x = max(0.0, self._player_vel_x - x_decel)
-            elif x_input == 1 and self._player_vel_x < 0:
-                self._player_vel_x = min(0.0, self._player_vel_x + x_decel)
-            self._player_vel_x += x_input * self.X_ACCEL * dt
-        y_input = self._player_input['down'] - self._player_input['up']
-        y_decel = self.Y_DECEL * dt
-        if y_input == 0:
-            if self._player_vel_y > y_decel:
-                self._player_vel_y -= y_decel
-            elif self._player_vel_y < -y_decel:
-                self._player_vel_y += y_decel
-            else:
-                self._player_vel_y = 0.0
-        else:
-            if y_input == -1 and self._player_vel_y > 0:
-                self._player_vel_y = max(0.0, self._player_vel_y - y_decel)
-            elif y_input == 1 and self._player_vel_y < 0:
-                self._player_vel_y = min(0.0, self._player_vel_y + y_decel)
-            self._player_vel_y += y_input * self.Y_ACCEL * dt
-        # cap velocity
-        self._player_vel_x = max(-self.X_SPEED_MAX, min(self.X_SPEED_MAX, self._player_vel_x))
-        self._player_vel_y = max(-self.Y_SPEED_MAX, min(self.Y_SPEED_MAX, self._player_vel_y))
-        # apply velocity
-        self._player_x += self._player_vel_x * dt
-        self._player_y += self._player_vel_y * dt
-        # cap position
-        self._player_x = max(
-            self.SPACE_BORDER,
-            min(
-                self.SPACE_WIDTH - self.SPACE_BORDER - self._player_ship.rect.width,
-                self._player_x
-            )
-        )
-        self._player_y = max(
-            self.SPACE_BORDER,
-            min(
-                self.SPACE_HEIGHT - self.SPACE_BORDER - self._player_ship.rect.height,
-                self._player_y
-            )
-        )
-        # apply position to player rect
-        self._player_ship.rect.x = int(self._player_x)
-        self._player_ship.rect.y = int(self._player_y)
 
     def _updatePreDraw(self, screen):
         # star one-per-frame updates
