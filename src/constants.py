@@ -2,7 +2,7 @@ import sys
 import os
 
 
-TITLE = "GAME_NAME_HERE"
+TITLE = "Ready, uNsTeAdY, FIRE!"
 SCREEN_SIZE = (640, 360)
 COLORKEY = (255, 0, 255)
 FONT_SIZE = 24

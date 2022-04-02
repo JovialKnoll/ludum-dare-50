@@ -2,7 +2,7 @@ GAME_NAME_HERE
 
 
 Files and Folders:
-  PROJECT_NAME_HERE.exe
+  ready-unsteady-fire.exe
     - game executable - run this!
   config.ini
     - will be created automatically
