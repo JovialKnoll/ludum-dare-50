@@ -131,20 +131,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_timer -= dt
         self._star_sprites_0.update(dt)
         self._star_sprites_1.update(dt)
-        if self._star_timer <= 0:
-            for sprite in self._star_sprites_0:
-                if not sprite.stillAnimating():
-                    sprite.kill()
-            for sprite in self._star_sprites_1:
-                if not sprite.stillAnimating():
-                    sprite.kill()
-            self._star_timer = self.STAR_DELAY
-            self._makeStar(self.SPACE_WIDTH)
-
-        self._charge += dt * self.CHARGE_SPEED
-        if self._charge > 1.0:
-            self._charge = 1.0
-
         # bar shaking
         if self._bar_shake_timer is not None:
             if self._bar_shake_timer > 0:
@@ -163,9 +149,22 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._setShake()
             else:
                 self._bar_shake = (0, 0)
+        # charging
+        self._charge += dt * self.CHARGE_SPEED
+        if self._charge > 1.0:
+            self._charge = 1.0
 
     def _updatePreDraw(self, screen: pygame.surface.Surface):
-        pass
+        # star one-per-frame updates
+        if self._star_timer <= 0:
+            for sprite in self._star_sprites_0:
+                if not sprite.stillAnimating():
+                    sprite.kill()
+            for sprite in self._star_sprites_1:
+                if not sprite.stillAnimating():
+                    sprite.kill()
+            self._star_timer = self.STAR_DELAY
+            self._makeStar(self.SPACE_WIDTH)
 
     def _drawPreSprites(self, screen: pygame.surface.Surface):
         self._star_sprites_0.draw(screen)
