@@ -177,6 +177,38 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_input['down'] = 0
             elif event.key in self.KEYS_HOLD:
                 self._player_input['hold_fire'] = False
+        elif event.type == pygame.JOYAXISMOTION:
+            if event.axis in (0, 2):
+                self._player_input['left'] = 0
+                self._player_input['right'] = 0
+                if event.value < -0.1:
+                    self._player_input['left'] = 1
+                elif event.value > 0.1:
+                    self._player_input['right'] = 1
+            elif event.axis in (1, 3):
+                self._player_input['up'] = 0
+                self._player_input['down'] = 0
+                if event.value < -0.1:
+                    self._player_input['up'] = 1
+                elif event.value > 0.1:
+                    self._player_input['down'] = 1
+        elif event.type == pygame.JOYHATMOTION:
+            self._player_input['left'] = 0
+            self._player_input['right'] = 0
+            self._player_input['up'] = 0
+            self._player_input['down'] = 0
+            if event.value[0] == -1:
+                self._player_input['left'] = 1
+            elif event.value[0] == 1:
+                self._player_input['right'] = 1
+            if event.value[1] == 1:
+                self._player_input['up'] = 1
+            elif event.value[1] == -1:
+                self._player_input['down'] = 1
+        elif event.type == pygame.JOYBUTTONDOWN:
+            self._player_input['hold_fire'] = True
+        elif event.type == pygame.JOYBUTTONUP:
+            self._player_input['hold_fire'] = False
 
     def _makeStar(self, x):
         star_sprite_0 = jovialengine.AnimSprite()
