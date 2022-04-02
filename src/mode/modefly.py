@@ -18,7 +18,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_OFFSET = (BAR_BORDER_HEIGHT - BAR_HEIGHT) // 2
     BAR_BORDER_COLOR = (105, 105, 124)
     BAR_EMPTY_COLOR = (12, 24, 31)
-    BAR_CHARGE_SPEED = 0.001 / 8
+    CHARGE_SPEED = 1 / 8000
     STAR_DELAY = 25
     STAR_DISTANCE = SPACE_WIDTH + SPACE_BORDER * 2
     BACKGROUND_TIME = 2000
@@ -141,7 +141,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             self._star_timer = self.STAR_DELAY
             self._makeStar(self.SPACE_WIDTH)
 
-        self._charge += dt * self.BAR_CHARGE_SPEED
+        self._charge += dt * self.CHARGE_SPEED
         if self._charge > 1.0:
             self._charge = 1.0
 
@@ -153,13 +153,13 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._bar_shake_timer = None
         if self._bar_shake_timer is None:
             if self._charge >= 0.75:
-                self._bar_shake_timer = 125
+                self._bar_shake_timer = 25
                 self._setShake()
             elif self._charge >= 0.5:
-                self._bar_shake_timer = 250
+                self._bar_shake_timer = 50
                 self._setShake()
             elif self._charge >= 0.25:
-                self._bar_shake_timer = 500
+                self._bar_shake_timer = 100
                 self._setShake()
             else:
                 self._bar_shake = (0, 0)
