@@ -17,6 +17,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_BORDER_HEIGHT = 32
     BAR_OFFSET = (BAR_BORDER_HEIGHT - BAR_HEIGHT) // 2
     BAR_BORDER_COLOR = (105, 105, 124)
+    BAR_EMPTY_COLOR = (12, 24, 31)
     BAR_CHARGE_SPEED = 0.001 / 8
     STAR_DELAY = 25
     STAR_DISTANCE = SPACE_WIDTH + SPACE_BORDER * 2
@@ -118,6 +119,23 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     def _drawPostSprites(self, screen: pygame.surface.Surface):
         pass
 
+    def _drawBarMarks(self, screen: pygame.surface.Surface, color, pos_x: int, width: int):
+        screen.fill(
+            color,
+            (
+                self.BAR_OFFSET + pos_x,
+                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
+                width,
+                self.BAR_BORDER_HEIGHT
+            )
+        )
+
+    @staticmethod
+    def _getBarColor(charge):
+        bar_color_component = int(charge * 255)
+        bar_color = (bar_color_component, 0, 255 - bar_color_component)
+        return bar_color
+
     def _drawPostCamera(self, screen: pygame.surface.Surface):
         # bar border
         screen.fill(
@@ -129,9 +147,19 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self.BAR_BORDER_HEIGHT
             )
         )
+        self._drawBarMarks(screen, self._getBarColor(0), 0, 3)
+        self._drawBarMarks(screen, constants.BLACK, 0, 1)
+        self._drawBarMarks(screen, self._getBarColor(0.25), (self.BAR_WIDTH // 2) - (self.BAR_WIDTH // 4) - 2, 3)
+        self._drawBarMarks(screen, constants.BLACK, (self.BAR_WIDTH // 2) - (self.BAR_WIDTH // 4) - 1, 1)
+        self._drawBarMarks(screen, self._getBarColor(0.5), (self.BAR_WIDTH // 2) - 2, 3)
+        self._drawBarMarks(screen, constants.BLACK, (self.BAR_WIDTH // 2) - 1, 1)
+        self._drawBarMarks(screen, self._getBarColor(0.75), (self.BAR_WIDTH // 2) + (self.BAR_WIDTH // 4) - 2, 3)
+        self._drawBarMarks(screen, constants.BLACK, (self.BAR_WIDTH // 2) + (self.BAR_WIDTH // 4) - 1, 1)
+        self._drawBarMarks(screen, self._getBarColor(1), self.BAR_WIDTH - 3, 3)
+        self._drawBarMarks(screen, constants.BLACK, self.BAR_WIDTH - 1, 1)
         # unfilled bar
         screen.fill(
-            constants.BLACK,
+            self.BAR_EMPTY_COLOR,
             (
                 self.BAR_OFFSET,
                 constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET,
@@ -140,10 +168,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             )
         )
         # filled bar
-        bar_color_component = int(self._charge * 255)
-        bar_color = (bar_color_component, 0, 255 - bar_color_component)
         screen.fill(
-            bar_color,
+            self._getBarColor(self._charge),
             (
                 self.BAR_OFFSET,
                 constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET,
