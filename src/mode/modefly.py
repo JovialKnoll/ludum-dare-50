@@ -142,16 +142,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if event.axis in (0, 2):
                 self._player_input['left'] = 0
                 self._player_input['right'] = 0
-                if event.value < -0.1:
+                if event.value < -0.3:
                     self._player_input['left'] = 1
-                elif event.value > 0.1:
+                elif event.value > 0.3:
                     self._player_input['right'] = 1
             elif event.axis in (1, 3):
                 self._player_input['up'] = 0
                 self._player_input['down'] = 0
-                if event.value < -0.1:
+                if event.value < -0.3:
                     self._player_input['up'] = 1
-                elif event.value > 0.1:
+                elif event.value > 0.3:
                     self._player_input['down'] = 1
         elif event.type == pygame.JOYHATMOTION:
             self._player_input['left'] = 0
