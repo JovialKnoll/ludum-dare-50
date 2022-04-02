@@ -404,9 +404,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             (0, 220, 0),
             (
                 self.BAR_OFFSET + self._bar_shake[0],
-                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1] - 1,
+                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
                 self.BAR_WIDTH * self._player_charge_slowdown_timer / self.BASE_CHARGE_SLOWDOWN_TIME,
-                self.BAR_HEIGHT + 2
+                self.BAR_BORDER_HEIGHT
             )
         )
         # unfilled bar
@@ -416,6 +416,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self.BAR_OFFSET + self._bar_shake[0],
                 constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1],
                 self.BAR_WIDTH,
+                self.BAR_HEIGHT
+            )
+        )
+        # filled bar
+        screen.fill(
+            self._getBarColor(self._charge),
+            (
+                self.BAR_OFFSET + self._bar_shake[0],
+                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1],
+                self.BAR_WIDTH * self._charge,
                 self.BAR_HEIGHT
             )
         )
@@ -429,13 +439,3 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # self._drawBarMarks(screen, constants.BLACK, (self.BAR_WIDTH // 2) + (self.BAR_WIDTH // 4) - 1, 1)
         self._drawBarMarks(screen, self._getBarColor(1), self.BAR_WIDTH - 3, 3)
         # self._drawBarMarks(screen, constants.BLACK, self.BAR_WIDTH - 1, 1)
-        # filled bar
-        screen.fill(
-            self._getBarColor(self._charge),
-            (
-                self.BAR_OFFSET + self._bar_shake[0],
-                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1],
-                self.BAR_WIDTH * self._charge,
-                self.BAR_HEIGHT
-            )
-        )
