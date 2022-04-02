@@ -19,6 +19,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_BORDER_COLOR = (15, 15, 25)
     BAR_EMPTY_COLOR = (4, 6, 8)
     BASE_CHARGE_SPEED = 1 / 16000
+    BASE_CHARGE_SLOWDOWN_TIME = 250
     STAR_DELAY = 200
     STAR_DISTANCE = SPACE_WIDTH + SPACE_BORDER * 2
     BACKGROUND_TIME = 16000
@@ -94,6 +95,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_player_vel_y',
         '_player_x',
         '_player_y',
+        '_player_charge_slowdown_timer',
     )
 
     def __init__(self):
@@ -142,16 +144,20 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             'right': 0,
             'up': 0,
             'down': 0,
-            'hold_fire': False,
         }
         self._player_vel_x = 0.0
         self._player_vel_y = 0.0
         self._player_x = 0
         self._player_y = 0
+        self._player_charge_slowdown_timer = 0
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
         self._player_y = float(self._player_ship.rect.y)
+
+    def _resetPlayerChargeSlowdown(self):
+        self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
+        #if self._charge
 
     def _input(self, event: pygame.event.Event):
         if event.type == pygame.KEYDOWN:
@@ -164,7 +170,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             elif event.key in self.KEYS_DOWN:
                 self._player_input['down'] = 1
             elif event.key in self.KEYS_HOLD:
-                self._player_input['hold_fire'] = True
+                self._resetPlayerChargeSlowdown()
         elif event.type == pygame.KEYUP:
             if event.key in self.KEYS_LEFT:
                 self._player_input['left'] = 0
@@ -174,8 +180,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_input['up'] = 0
             elif event.key in self.KEYS_DOWN:
                 self._player_input['down'] = 0
-            elif event.key in self.KEYS_HOLD:
-                self._player_input['hold_fire'] = False
         elif event.type == pygame.JOYAXISMOTION:
             if event.axis in (0, 2):
                 self._player_input['left'] = 0
@@ -205,9 +209,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             elif event.value[1] == -1:
                 self._player_input['down'] = 1
         elif event.type == pygame.JOYBUTTONDOWN:
-            self._player_input['hold_fire'] = True
-        elif event.type == pygame.JOYBUTTONUP:
-            self._player_input['hold_fire'] = False
+            self._resetPlayerChargeSlowdown()
 
     def _makeStar(self, x):
         star_sprite_0 = jovialengine.AnimSprite()
@@ -252,6 +254,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_timer -= dt
         self._star_sprites_0.update(dt)
         self._star_sprites_1.update(dt)
+        # charge slowdown
+        self._player_charge_slowdown_timer -= dt
         # bar shaking
         if self._bar_shake_timer is not None:
             if self._bar_shake_timer > 0:
@@ -259,17 +263,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if self._bar_shake_timer <= 0:
                 self._bar_shake_timer = None
         if self._bar_shake_timer is None:
-            if self._charge >= 0.75:
-                self._bar_shake_timer = 40
-                self._setShake()
-            elif self._charge >= 0.5:
-                self._bar_shake_timer = 80
-                self._setShake()
-            elif self._charge >= 0.25:
-                self._bar_shake_timer = 160
-                self._setShake()
-            else:
+            if self._charge < 0.25:
                 self._bar_shake = (0, 0)
+            else:
+                if self._charge < 0.5:
+                    self._bar_shake_timer = 200 if self._player_charge_slowdown_timer > 0 else 160
+                elif self._charge < 0.75:
+                    self._bar_shake_timer = 100 if self._player_charge_slowdown_timer > 0 else 80
+                elif self._charge < 1.0:
+                    self._bar_shake_timer = 50 if self._player_charge_slowdown_timer > 0 else 40
+                self._setShake()
         if self._player_ship.stillAnimating():
             # can only do player movement after it animated into place
             return
