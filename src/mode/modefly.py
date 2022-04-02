@@ -156,8 +156,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_y = float(self._player_ship.rect.y)
 
     def _input(self, event: pygame.event.Event):
-        if self._player_ship.stillAnimating():
-            return
         if event.type == pygame.KEYDOWN:
             if event.key in self.KEYS_LEFT:
                 self._player_input['left'] = 1
@@ -243,6 +241,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             else:
                 self._bar_shake = (0, 0)
         if self._player_ship.stillAnimating():
+            # can only do player movement after it animated into place
             return
         # player movement
         # apply accel or decel based on input
