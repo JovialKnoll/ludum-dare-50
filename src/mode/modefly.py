@@ -73,10 +73,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         pygame.K_z,
     }
     X_ACCEL = 64 / 1000 / 125
-    X_SPEED_MAX = 256 / 1000
-    X_DECEL = X_SPEED_MAX
+    X_SPEED_MAX = 320 / 1000
+    X_DECEL = X_SPEED_MAX / 125
     Y_ACCEL = 64 / 1000 / 125
-    Y_SPEED_MAX = 192 / 1000
+    Y_SPEED_MAX = 288 / 1000
     Y_DECEL = X_DECEL
     __slots__ = (
         '_star_sprites_0',
