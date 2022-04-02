@@ -74,10 +74,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     }
     X_ACCEL = 64 / 1000
     X_DECEL = X_ACCEL * 4
-    X_SPEED_MAX = 80 / 1000
+    X_SPEED_MAX = 256 / 1000
     Y_ACCEL = 48 / 1000
     Y_DECEL = Y_ACCEL * 4
-    Y_SPEED_MAX = 64 / 1000
+    Y_SPEED_MAX = 192 / 1000
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -132,7 +132,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_ship.rect.midleft = (-self.SPACE_BORDER, self.SPACE_HEIGHT // 2)
         self._player_ship.addPosRel(
             jovialengine.AnimSprite.DecSpeed,
-            2000,
+            1000,
             (self.SPACE_BORDER * 5, 0),
             callback=self._syncPos
         )
