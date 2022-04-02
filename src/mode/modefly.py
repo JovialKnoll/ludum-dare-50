@@ -89,6 +89,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_current_shake',
         '_charge',
         '_player_ship',
+        '_joysticks',
         '_player_input',
         '_player_vel_x',
         '_player_vel_y',
@@ -139,6 +140,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._all_sprites.add(self._player_ship)
         # move other sprite to back? (to keep ship in front) self._all_sprites.move_to_back
 
+        self._joysticks = []
+        for i in range(pygame.joystick.get_count()):
+            self._joysticks.add(pygame.joystick.Joystick(i))
         self._player_input = {
             'left': 0,
             'right': 0,
