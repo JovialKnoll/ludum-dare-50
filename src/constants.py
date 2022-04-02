@@ -35,6 +35,9 @@ TITLE_FONT = os.path.join(GRAPHICS_DIRECTORY, 'Roboto-Black.ttf')
 LOGOS_DIRECTORY = os.path.join(GRAPHICS_DIRECTORY, 'logos')
 JK_LOGO_BLACK = os.path.join(LOGOS_DIRECTORY, 'jklogo.png')
 
+SPRITES_DIRECTORY = os.path.join(GRAPHICS_DIRECTORY, 'sprites')
+SHIP = os.path.join(SPRITES_DIRECTORY, 'ship.png')
+
 MUSIC_DIRECTORY = os.path.join(SOUND_DIRECTORY, 'music')
 
 VERSION_TEXT = os.path.join(TEXT_DIRECTORY, 'version.txt')

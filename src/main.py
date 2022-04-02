@@ -14,6 +14,7 @@ from mode import ModeOpening0
 def main():
     game = jovialengine.Game(ModeOpening0)
     while game.run():
+        # print(game._clock.get_fps())
         pass
     del game
 

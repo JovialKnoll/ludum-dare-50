@@ -29,6 +29,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_star_image_0',
         '_star_image_1',
         '_charge',
+        '_player_ship',
     )
 
     def __init__(self):
@@ -57,6 +58,18 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             )
 
         self._charge = 0.0
+        self._player_ship = jovialengine.AnimSprite()
+        self._player_ship.image = pygame.image.load(constants.SHIP).convert()
+        self._player_ship.image.set_colorkey(constants.COLORKEY)
+        self._player_ship.rect = self._player_ship.image.get_rect()
+        self._player_ship.rect.midleft = (-self.SPACE_BORDER, self.SPACE_HEIGHT // 2)
+        self._player_ship.addPosRel(
+            jovialengine.AnimSprite.DecSpeed,
+            self.BACKGROUND_TIME // 2,
+            (self.SPACE_BORDER * 5, 0)
+        )
+        self._all_sprites.add(self._player_ship)
+        # move other sprite to back? (to keep ship in front) self._all_sprites.move_to_back
 
     def _input(self, event: pygame.event.Event):
         # player movement, controls, etc
