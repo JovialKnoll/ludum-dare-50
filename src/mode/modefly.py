@@ -22,12 +22,21 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     STAR_DELAY = 25
     STAR_DISTANCE = SPACE_WIDTH + SPACE_BORDER * 2
     BACKGROUND_TIME = 2000
+    SHAKES = (
+        (-1, -1),
+        (-1, 1),
+        (1, -1),
+        (1, 1),
+    )
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
         '_star_timer',
         '_star_image_0',
         '_star_image_1',
+        '_bar_shake_timer',
+        '_bar_shake',
+        '_current_shake',
         '_charge',
         '_player_ship',
     )
@@ -57,6 +66,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 int(self.SPACE_WIDTH * s / stars)
             )
 
+        self._bar_shake_timer = None
+        self._bar_shake = (0, 0)
+        self._current_shake = None
         self._charge = 0.0
         self._player_ship = jovialengine.AnimSprite()
         self._player_ship.image = pygame.image.load(constants.SHIP).convert()
@@ -72,8 +84,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # move other sprite to back? (to keep ship in front) self._all_sprites.move_to_back
 
     def _input(self, event: pygame.event.Event):
+        if self._player_ship.stillAnimating():
+            return
         # player movement, controls, etc
-        pass
 
     def _makeStar(self, x):
         star_sprite_0 = jovialengine.AnimSprite()
@@ -103,7 +116,18 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         )
         self._star_sprites_1.add(star_sprite_1)
 
+    def _setShake(self):
+        if self._bar_shake == (0, 0):
+            self._current_shake = random.randrange(len(self.SHAKES))
+            self._bar_shake = self.SHAKES[self._current_shake]
+        else:
+            possible_shakes = list(range(len(self.SHAKES)))
+            possible_shakes = possible_shakes[:self._current_shake] + possible_shakes[self._current_shake + 1:]
+            self._current_shake = random.choice(possible_shakes)
+            self._bar_shake = self.SHAKES[self._current_shake]
+
     def _update(self, dt: int):
+        # background stars
         self._star_timer -= dt
         self._star_sprites_0.update(dt)
         self._star_sprites_1.update(dt)
@@ -120,7 +144,25 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._charge += dt * self.BAR_CHARGE_SPEED
         if self._charge > 1.0:
             self._charge = 1.0
-        pass
+
+        # bar shaking
+        if self._bar_shake_timer is not None:
+            if self._bar_shake_timer > 0:
+                self._bar_shake_timer -= dt
+            if self._bar_shake_timer <= 0:
+                self._bar_shake_timer = None
+        if self._bar_shake_timer is None:
+            if self._charge >= 0.75:
+                self._bar_shake_timer = 125
+                self._setShake()
+            elif self._charge >= 0.5:
+                self._bar_shake_timer = 250
+                self._setShake()
+            elif self._charge >= 0.25:
+                self._bar_shake_timer = 500
+                self._setShake()
+            else:
+                self._bar_shake = (0, 0)
 
     def _updatePreDraw(self, screen: pygame.surface.Surface):
         pass
@@ -136,10 +178,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         screen.fill(
             color,
             (
-                self.BAR_OFFSET + pos_x,
-                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
+                self.BAR_OFFSET + pos_x + self._bar_shake[0],
+                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + 1 + self._bar_shake[1],
                 width,
-                self.BAR_BORDER_HEIGHT
+                self.BAR_BORDER_HEIGHT - 2
             )
         )
 
@@ -174,8 +216,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         screen.fill(
             self.BAR_EMPTY_COLOR,
             (
-                self.BAR_OFFSET,
-                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET,
+                self.BAR_OFFSET + self._bar_shake[0],
+                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1],
                 self.BAR_WIDTH,
                 self.BAR_HEIGHT
             )
@@ -184,8 +226,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         screen.fill(
             self._getBarColor(self._charge),
             (
-                self.BAR_OFFSET,
-                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET,
+                self.BAR_OFFSET + self._bar_shake[0],
+                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1],
                 self.BAR_WIDTH * self._charge,
                 self.BAR_HEIGHT
             )
