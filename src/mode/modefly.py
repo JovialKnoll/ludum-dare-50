@@ -18,6 +18,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_OFFSET = (BAR_BORDER_HEIGHT - BAR_HEIGHT) // 2
     BAR_BORDER_COLOR = (15, 15, 25)
     BAR_EMPTY_COLOR = (4, 6, 8)
+    BAR_SLOWDOWN_COLOR = (0, 220, 0)
     BASE_CHARGE_SPEED = 1 / 16000
     BASE_CHARGE_SLOWDOWN_TIME = 1000
     STAR_DELAY = 200
@@ -205,6 +206,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             self._current_shake = random.choice(possible_shakes)
             self._bar_shake = self.SHAKES[self._current_shake]
 
+    def _getSlowdownAmount(self):
+        return self._player_charge_slowdown_timer / self.BASE_CHARGE_SLOWDOWN_TIME
+
     def _update(self, dt):
         # background stars
         self._star_timer -= dt
@@ -277,38 +281,38 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_charge_slowdown_timer -= dt
         self._player_charge_slowdown_timer = max(0, self._player_charge_slowdown_timer)
         # charging
-        charging_amount = 0
         threshold = 0
         shake_timer_reset = 0
         if self._charge < 0.25:
-            charging_amount = dt * self.BASE_CHARGE_SPEED / 2
             threshold = 0.25
             shake_timer_reset = 800
         elif self._charge < 0.5:
-            charging_amount = dt * self.BASE_CHARGE_SPEED
             threshold = 0.5
             shake_timer_reset = 400
         elif self._charge < 0.75:
-            charging_amount = dt * self.BASE_CHARGE_SPEED
             threshold = 0.75
             shake_timer_reset = 200
         elif self._charge < 1.0:
-            charging_amount = dt * self.BASE_CHARGE_SPEED
             threshold = 1.0
             shake_timer_reset = 100
-        if self._player_charge_slowdown_timer / self.BASE_CHARGE_SLOWDOWN_TIME >= threshold:
+        charging_amount = dt * self.BASE_CHARGE_SPEED
+        if self._getSlowdownAmount() >= threshold:
             charging_amount /= 2
             shake_timer_reset *= 2
         elif self._player_charge_slowdown_timer > 0:
             charging_amount *= 3/4
             shake_timer_reset = shake_timer_reset + shake_timer_reset // 2
         self._charge = min(1.0, self._charge + charging_amount)
-        # bar shaking
         if self._bar_shake_timer is not None:
             if self._bar_shake_timer > 0:
                 self._bar_shake_timer -= dt
             if self._bar_shake_timer <= 0:
                 self._bar_shake_timer = None
+        if self._charge >= threshold > self._getSlowdownAmount():
+            # kick off blast here
+            self._charge = -0.25
+            self._bar_shake_timer = None
+            self._player_charge_slowdown_timer = 0
         if self._bar_shake_timer is None:
             if self._charge < 0.25:
                 self._bar_shake = (0, 0)
@@ -365,14 +369,40 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         )
         # slowdown bar
         screen.fill(
-            (0, 220, 0),
+            self.BAR_SLOWDOWN_COLOR,
             (
                 self.BAR_OFFSET + self._bar_shake[0],
                 constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
-                self.BAR_WIDTH * self._player_charge_slowdown_timer / self.BASE_CHARGE_SLOWDOWN_TIME,
+                self.BAR_WIDTH * self._getSlowdownAmount(),
                 self.BAR_BORDER_HEIGHT
             )
         )
+        draw_safety_marks = False
+        if self._charge < 0.25:
+            draw_safety_marks = self._getSlowdownAmount() >= 0.25
+        elif self._charge < 0.5:
+            draw_safety_marks = self._getSlowdownAmount() >= 0.5
+        elif self._charge < 0.75:
+            draw_safety_marks = self._getSlowdownAmount() >= 0.75
+        if draw_safety_marks:
+            screen.fill(
+                self.BAR_SLOWDOWN_COLOR,
+                (
+                    0,
+                    constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
+                    self.BAR_OFFSET + 1,
+                    self.BAR_BORDER_HEIGHT
+                )
+            )
+            screen.fill(
+                self.BAR_SLOWDOWN_COLOR,
+                (
+                    self.BAR_OFFSET + self.BAR_WIDTH - 1,
+                    constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
+                    self.BAR_OFFSET + 1,
+                    self.BAR_BORDER_HEIGHT
+                )
+            )
         # unfilled bar
         screen.fill(
             self.BAR_EMPTY_COLOR,
@@ -384,12 +414,13 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             )
         )
         # filled bar
+        visible_charge = max(0.0, self._charge)
         screen.fill(
-            self._getBarColor(self._charge),
+            self._getBarColor(visible_charge),
             (
                 self.BAR_OFFSET + self._bar_shake[0],
                 constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1],
-                self.BAR_WIDTH * self._charge,
+                self.BAR_WIDTH * max(0.0, visible_charge),
                 self.BAR_HEIGHT
             )
         )
