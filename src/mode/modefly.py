@@ -18,16 +18,60 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_OFFSET = (BAR_BORDER_HEIGHT - BAR_HEIGHT) // 2
     BAR_BORDER_COLOR = (105, 105, 124)
     BAR_EMPTY_COLOR = (12, 24, 31)
-    CHARGE_SPEED = 1 / 8000
-    STAR_DELAY = 25
+    CHARGE_SPEED = 1 / 16000
+    STAR_DELAY = 200
     STAR_DISTANCE = SPACE_WIDTH + SPACE_BORDER * 2
-    BACKGROUND_TIME = 2000
+    BACKGROUND_TIME = 16000
     SHAKES = (
         (-1, -1),
         (-1, 1),
         (1, -1),
         (1, 1),
     )
+    KEYS_LEFT = {pygame.K_LEFT, pygame.K_a}
+    KEYS_RIGHT = {pygame.K_RIGHT, pygame.K_d}
+    KEYS_UP = {pygame.K_UP, pygame.K_w}
+    KEYS_DOWN = {pygame.K_DOWN, pygame.K_s}
+    KEYS_HOLD = {
+        pygame.K_SPACE,
+        pygame.K_RETURN,
+        pygame.K_0,
+        pygame.K_1,
+        pygame.K_2,
+        pygame.K_3,
+        pygame.K_4,
+        pygame.K_5,
+        pygame.K_6,
+        pygame.K_7,
+        pygame.K_8,
+        pygame.K_9,
+        # pygame.K_a,
+        pygame.K_b,
+        pygame.K_c,
+        # pygame.K_d,
+        pygame.K_e,
+        pygame.K_f,
+        pygame.K_g,
+        pygame.K_h,
+        pygame.K_i,
+        pygame.K_j,
+        pygame.K_k,
+        pygame.K_l,
+        pygame.K_m,
+        pygame.K_n,
+        pygame.K_o,
+        pygame.K_p,
+        pygame.K_q,
+        pygame.K_r,
+        # pygame.K_s,
+        pygame.K_t,
+        pygame.K_u,
+        pygame.K_v,
+        # pygame.K_w,
+        pygame.K_x,
+        pygame.K_y,
+        pygame.K_z,
+    }
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -39,6 +83,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_current_shake',
         '_charge',
         '_player_ship',
+        '_player_input',
     )
 
     def __init__(self):
@@ -83,9 +128,39 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._all_sprites.add(self._player_ship)
         # move other sprite to back? (to keep ship in front) self._all_sprites.move_to_back
 
+        self._player_input = {
+            'left': 0,
+            'right': 0,
+            'up': 0,
+            'down': 0,
+            'hold_fire': False,
+        }
+
     def _input(self, event: pygame.event.Event):
         if self._player_ship.stillAnimating():
             return
+        if event.type == pygame.KEYDOWN:
+            if event.key in self.KEYS_LEFT:
+                self._player_input['left'] = 1
+            elif event.key in self.KEYS_RIGHT:
+                self._player_input['right'] = 1
+            elif event.key in self.KEYS_UP:
+                self._player_input['up'] = 1
+            elif event.key in self.KEYS_DOWN:
+                self._player_input['down'] = 1
+            elif event.key in self.KEYS_HOLD:
+                self._player_input['hold_fire'] = True
+        elif event.type == pygame.KEYUP:
+            if event.key in self.KEYS_LEFT:
+                self._player_input['left'] = 0
+            elif event.key in self.KEYS_RIGHT:
+                self._player_input['right'] = 0
+            elif event.key in self.KEYS_UP:
+                self._player_input['up'] = 0
+            elif event.key in self.KEYS_DOWN:
+                self._player_input['down'] = 0
+            elif event.key in self.KEYS_HOLD:
+                self._player_input['hold_fire'] = False
         # player movement, controls, etc
 
     def _makeStar(self, x):
@@ -139,13 +214,13 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._bar_shake_timer = None
         if self._bar_shake_timer is None:
             if self._charge >= 0.75:
-                self._bar_shake_timer = 25
+                self._bar_shake_timer = 40#25
                 self._setShake()
             elif self._charge >= 0.5:
-                self._bar_shake_timer = 50
+                self._bar_shake_timer = 80#50
                 self._setShake()
             elif self._charge >= 0.25:
-                self._bar_shake_timer = 100
+                self._bar_shake_timer = 160#100
                 self._setShake()
             else:
                 self._bar_shake = (0, 0)
