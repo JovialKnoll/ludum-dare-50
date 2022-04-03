@@ -38,10 +38,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     KEYS_RIGHT = {pygame.K_RIGHT, pygame.K_d}
     KEYS_UP = {pygame.K_UP, pygame.K_w}
     KEYS_DOWN = {pygame.K_DOWN, pygame.K_s}
-    X_ACCEL = 64 / 1000 / 125
+    X_ACCEL = 1024 / 1000 / 1000
     X_SPEED_MAX = 320 / 1000
-    X_DECEL = X_SPEED_MAX / 125
-    Y_ACCEL = 64 / 1000 / 125
+    X_DECEL = X_SPEED_MAX * 8 / 1000
+    Y_ACCEL = 1024 / 1000 / 1000
     Y_SPEED_MAX = 288 / 1000
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6

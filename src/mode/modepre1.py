@@ -4,10 +4,7 @@ import constants
 import mode
 
 
-class ModePre1(mode.ModeOpeningPause):
-    __slots__ = (
-    )
-
+class ModePre1(mode.ModeOpeningPause, jovialengine.Saveable):
     def __init__(self):
         super().__init__()
         self._background.fill(constants.BLACK)
@@ -19,6 +16,14 @@ class ModePre1(mode.ModeOpeningPause):
             constants.WHITE,
             constants.BLACK
         )
+
+    def save(self):
+        return 1
+
+    @classmethod
+    def load(cls, save_data):
+        new_obj = cls()
+        return new_obj
 
     def _switchMode(self):
         self.next_mode = mode.ModeFly1()
