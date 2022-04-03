@@ -14,6 +14,7 @@ class ModeOpening0(mode.ModeOpening):
 
     def __init__(self):
         super().__init__()
+        pygame.mixer.Sound(constants.JOVIAL_SOUND).play()
         self._time = 0
         self._background.fill(constants.WHITE)
         jovialengine.shared.font_wrap.renderToCentered(
