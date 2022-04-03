@@ -67,9 +67,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_can_blast',
         '_spawn_timer',
         '_enemy_images',
-        '_enemy_level',
         '_enemy_count',
-        '_kill_count',
+        '_kill_count_down',
     )
 
     def __init__(self):
@@ -138,14 +137,25 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         enemy_image2 = pygame.image.load(constants.ENEMY2).convert()
         enemy_image2.set_colorkey(constants.COLORKEY)
         self._enemy_images = (enemy_image0, enemy_image1, enemy_image2)
-        self._enemy_level = 1
         self._enemy_count = 0
-        self._kill_count = 0
+        self._kill_count_down = self._getKillAmount()
 
     @abc.abstractmethod
     def _getSpawnWait(self):
         raise NotImplementedError(
             type(self).__name__ + "._getSpawnWait(self)"
+        )
+
+    @abc.abstractmethod
+    def _getKillAmount(self):
+        raise NotImplementedError(
+            type(self).__name__ + "._getKillAmount(self)"
+        )
+
+    @abc.abstractmethod
+    def _getEnemyLevel(self):
+        raise NotImplementedError(
+            type(self).__name__ + "._getEnemyLevel(self)"
         )
 
     def _syncPos(self):
@@ -246,22 +256,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_sprites_1.add(star_sprite_1)
 
     def _spawnMonster(self):
-        level = self._enemy_level
-        if random.random() < 0.15:
-            level = min(4, level + 1)
-        enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), level)
+        enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), self._getEnemyLevel())
         self._all_sprites.add(enemy)
-        self._enemy_count += 1
-        if self._enemy_count == 8:
-            self._enemy_level = 2
-        elif self._enemy_count == 16:
-            self._enemy_level = 3
-        elif self._enemy_count == 24:
-            self._enemy_level = 4
-        elif self._enemy_count == 30:
-            # win against this wave?
-            pass
         self._spawn_timer = self._getSpawnWait()
+        self._enemy_count += 1
 
     def _setShake(self):
         if self._bar_shake == (0, 0):
@@ -405,7 +403,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # somehow self._can_blast must be set true again later
 
     def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite, level: int):
-        #self._kill_count
         is_enemy = isinstance(sprite, Enemy)
         if is_enemy and sprite.level > level:
             return False
@@ -418,7 +415,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             return False
         if result is True:
             if is_enemy:
-                self._kill_count += 1
+                self._kill_count_down -= 1
             return True
         for i in range(7):
             # distance from player = self.BEAM_HALF_HEIGHT * 2
@@ -434,7 +431,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 return False
             if result is True:
                 if is_enemy:
-                    self._kill_count += 1
+                    self._kill_count_down -= 1
                 return True
         return False
 
@@ -605,6 +602,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         jovialengine.shared.font_wrap.renderTo(
             screen,
             (0, 0),
-            "KILL COUNT: " + str(self._kill_count),
+            "ENEMYS LEFT IN WAVE: " + str(max(0, self._kill_count_down)),
             constants.WHITE
         )
