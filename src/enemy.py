@@ -20,7 +20,7 @@ class Enemy(jovialengine.AnimSprite):
         'level',
     )
 
-    def __init__(self, sprite_group: pygame.sprite.LayeredDirty, image, level: int = 1):
+    def __init__(self, sprite_group: pygame.sprite.LayeredDirty, image, mask, level: int = 1):
         super().__init__()
         self.sprite_group = sprite_group
         self.level = min(4, level)
@@ -33,6 +33,7 @@ class Enemy(jovialengine.AnimSprite):
         )
         del pix_array
         self.image = fixed_image
+        self.mask = mask
         self.rect = self.image.get_rect()
         self.rect.topleft = (672, random.randint(self.rect.height, 360 - self.rect.height * 2))
         if bool(random.getrandbits(1)):

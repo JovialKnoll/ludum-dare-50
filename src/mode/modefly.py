@@ -67,6 +67,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_blasting',
         '_spawn_timer',
         '_enemy_images',
+        '_enemy_mask',
         '_enemy_count',
         '_kill_count_down',
         '_blast_kill_count',
@@ -103,6 +104,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_ship = jovialengine.AnimSprite()
         self._player_ship.image = pygame.image.load(constants.SHIP).convert()
         self._player_ship.image.set_colorkey(constants.COLORKEY)
+        ship_mask = pygame.image.load(constants.SHIP_MASK).convert()
+        ship_mask.set_colorkey(constants.COLORKEY)
+        self._player_ship.mask = pygame.mask.from_surface(ship_mask)
         self._player_ship.rect = self._player_ship.image.get_rect()
         self._player_ship.rect.midleft = (-self.SPACE_BORDER, self.SPACE_HEIGHT // 2)
         self._player_ship.addPosRel(
@@ -137,6 +141,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         enemy_image2 = pygame.image.load(constants.ENEMY2).convert()
         enemy_image2.set_colorkey(constants.COLORKEY)
         self._enemy_images = (enemy_image0, enemy_image1, enemy_image2)
+        self._enemy_mask = pygame.mask.from_surface(enemy_image0)
         self._enemy_count = 0
         self._kill_count_down = self._getKillAmount()
         self._blast_kill_count = 0
@@ -261,7 +266,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_sprites_1.add(star_sprite_1)
 
     def _spawnMonster(self):
-        enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), self._getEnemyLevel())
+        enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), self._enemy_mask, self._getEnemyLevel())
         self._all_sprites.add(enemy)
         self._spawn_timer = self._getSpawnWait()
         self._enemy_count += 1
