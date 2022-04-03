@@ -23,7 +23,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_EMPTY_COLOR = (4, 6, 8)
     BAR_SLOWDOWN_COLOR = (100, 220, 100)
     BASE_CHARGE_SPEED = 1 / 16000
-    BASE_CHARGE_SLOWDOWN_TIME = 1000
+    BASE_CHARGE_SLOWDOWN_TIME = 500
     STAR_DELAY = 200
     STAR_DISTANCE = SPACE_WIDTH + SPACE_BORDER * 2
     BACKGROUND_TIME = 16000
@@ -401,16 +401,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 else:
                     self._bar_shake_timer = shake_timer_reset
                     self._setShake()
-            # spawning
-            self._spawn_timer -= dt
-            self._spawn_timer = max(0, self._spawn_timer)
-            if self._spawn_timer <= 0:
-                self._spawnMonster()
         # killing
         if self._blasting > 0:
             kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite)]
             for sprite in kill_sprites:
                 sprite.kill()
+        # spawning
+        self._spawn_timer -= dt
+        self._spawn_timer = max(0, self._spawn_timer)
+        if self._spawn_timer <= 0:
+            self._spawnMonster()
 
     def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite):
         level = self._getBlastLevel()
