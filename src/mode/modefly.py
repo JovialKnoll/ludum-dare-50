@@ -69,6 +69,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_enemy_images',
         '_enemy_count',
         '_kill_count_down',
+        '_blast_kill_count',
     )
 
     def __init__(self):
@@ -138,6 +139,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._enemy_images = (enemy_image0, enemy_image1, enemy_image2)
         self._enemy_count = 0
         self._kill_count_down = self._getKillAmount()
+        self._blast_kill_count = 0
 
     @abc.abstractmethod
     def _getSpawnWait(self):
@@ -156,6 +158,14 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         raise NotImplementedError(
             type(self).__name__ + "._getEnemyLevel(self)"
         )
+
+    def _FailedBlast(self):
+        # blasted with no kills fail
+        pass
+
+    def _FailedDied(self):
+        # died fail
+        pass
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -340,10 +350,18 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # charge slowdown
         self._player_charge_slowdown_timer -= dt
         self._player_charge_slowdown_timer = max(0, self._player_charge_slowdown_timer)
-        # charging
+        # end of blast
+        old_blasting = self._blasting
+        # blast countdown
         self._blasting -= dt
         self._blasting = max(0, self._blasting)
         if self._blasting == 0:
+            # if just finished blasting
+            if old_blasting > 0:
+                if self._blast_kill_count == 0:
+                    self._FailedBlast()
+                self._blast_kill_count = 0
+            # charging
             threshold = 0.0
             shake_timer_reset = 0
             if self._charge < 0.25:
@@ -414,6 +432,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if result is True:
                 if is_enemy:
                     self._kill_count_down -= 1
+                    self._blast_kill_count += 1
                 return True
         return False
 
@@ -538,6 +557,12 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         )
 
     def _drawPostCamera(self, screen):
+        jovialengine.shared.font_wrap.renderTo(
+            screen,
+            (0, 0),
+            "ENEMIES LEFT IN WAVE: " + str(max(0, self._kill_count_down)),
+            constants.WHITE
+        )
         draw_safety_marks = False
         visible_charge = max(0.0, self._charge)
         # bar border
@@ -552,6 +577,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         )
         if self._blasting > 0:
             visible_charge = self._blasting / self.MAX_BLAST_TIME
+            text = str(self._blast_kill_count) + " BLAST KILL COMBO"
+            # if self._blast_kill_count == 0:
+            #     text = "BLAST KILL COMBO"
+            text_width = jovialengine.shared.font_wrap.font.size(text)[0]
+            jovialengine.shared.font_wrap.renderTo(
+                screen,
+                (constants.SCREEN_SIZE[0] - text_width - 4, 0),
+                text,
+                constants.WHITE
+            )
         else:
             # slowdown bar
             screen.fill(
@@ -613,9 +648,3 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._drawBarMarks(screen, gameutility.getBarColor(0.5), (self.BAR_WIDTH // 2) - 2, 3)
         self._drawBarMarks(screen, gameutility.getBarColor(0.75), (self.BAR_WIDTH // 2) + (self.BAR_WIDTH // 4) - 2, 3)
         self._drawBarMarks(screen, gameutility.getBarColor(1), self.BAR_WIDTH - 3, 3)
-        jovialengine.shared.font_wrap.renderTo(
-            screen,
-            (0, 0),
-            "ENEMYS LEFT IN WAVE: " + str(max(0, self._kill_count_down)),
-            constants.WHITE
-        )
