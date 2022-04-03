@@ -5,6 +5,7 @@ import pygame
 import jovialengine
 
 import constants
+from enemy import Enemy
 
 
 class ModeFly(jovialengine.ModeBase, abc.ABC):
@@ -65,6 +66,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_blasting',
         '_can_blast',
         '_spawn_timer',
+        '_enemy_images',
     )
 
     def __init__(self):
@@ -126,6 +128,13 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._can_blast = True
 
         self._spawn_timer = self.SPAWN_WAIT
+        enemy_image0 = pygame.image.load(constants.ENEMY0).convert()
+        enemy_image0.set_colorkey(constants.COLORKEY)
+        enemy_image1 = pygame.image.load(constants.ENEMY1).convert()
+        enemy_image1.set_colorkey(constants.COLORKEY)
+        enemy_image2 = pygame.image.load(constants.ENEMY2).convert()
+        enemy_image2.set_colorkey(constants.COLORKEY)
+        self._enemy_images = (enemy_image0, enemy_image1, enemy_image2)
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -208,9 +217,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_sprites_1.add(star_sprite_1)
 
     def _spawnMonster(self):
-        # load images for sprites in init
-        # spawn monster here
-        # self._all_sprites.add()
+        enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), 1)
+        self._all_sprites.add(enemy)
         self._spawn_timer = self.SPAWN_WAIT
 
     def _setShake(self):
@@ -364,9 +372,12 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_sprites_0.draw(screen)
         self._star_sprites_1.draw(screen)
 
+    def _getBlastLevel(self):
+        return 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
+
     def _drawPostSprites(self, screen):
         if self._blasting > 0:
-            level = 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
+            level = self._getBlastLevel()
             for i in range(level):
                 size = level - i
                 color = self._getBarColor((i + 1) * 0.25)

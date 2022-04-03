@@ -1,10 +1,4 @@
-Auto shoot at certain amount (half, quarter, eighth?) in tank, hold down button to delay shot
-
-let should be delayed past max for a few seconds
-
 Have to pick up new bullets or something after a shot? Weak shots have to suck.
-
-
 
 shaking ship on title screen
 

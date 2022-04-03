@@ -37,6 +37,9 @@ JK_LOGO_BLACK = os.path.join(LOGOS_DIRECTORY, 'jklogo.png')
 
 SPRITES_DIRECTORY = os.path.join(GRAPHICS_DIRECTORY, 'sprites')
 SHIP = os.path.join(SPRITES_DIRECTORY, 'ship.png')
+ENEMY0 = os.path.join(SPRITES_DIRECTORY, 'enemy0.png')
+ENEMY1 = os.path.join(SPRITES_DIRECTORY, 'enemy1.png')
+ENEMY2 = os.path.join(SPRITES_DIRECTORY, 'enemy2.png')
 
 MUSIC_DIRECTORY = os.path.join(SOUND_DIRECTORY, 'music')
 
