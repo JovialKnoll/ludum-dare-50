@@ -73,6 +73,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_enemy_group',
         '_kill_count_down',
         '_blast_kill_count',
+        '_rao',
+        '_bwom',
     )
 
     def __init__(self):
@@ -149,6 +151,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
 
         self._kill_count_down = self._getKillAmount()
         self._blast_kill_count = 0
+
+        self._rao = pygame.mixer.Sound(constants.RAO)
+        self._bwom = pygame.mixer.Sound(constants.BWOM)
 
     @abc.abstractmethod
     def _getSpawnWait(self):
@@ -364,6 +369,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         if self._blasting == 0:
             # if just finished blasting
             if old_blasting > 0:
+                self._bwom.stop()
                 if self._blast_kill_count == 0:
                     self._failedBlast()
                 elif self._kill_count_down <= 0:
@@ -403,6 +409,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._charge = 0
                 self._bar_shake_timer = None
                 self._player_charge_slowdown_timer = 0
+                self._bwom.play()
             if self._bar_shake_timer is None:
                 if self._charge < 0.25:
                     self._bar_shake = (0, 0)
@@ -448,6 +455,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 if is_enemy:
                     self._kill_count_down -= 1
                     self._blast_kill_count += 1
+                    self._rao.play()
                 return True
         return False
 
