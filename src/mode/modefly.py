@@ -65,7 +65,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_player_y',
         '_player_charge_slowdown_timer',
         '_blasting',
-        '_can_blast',
         '_spawn_timer',
         '_enemy_images',
         '_enemy_count',
@@ -128,7 +127,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_charge_slowdown_timer = 0
 
         self._blasting = 0
-        self._can_blast = True
 
         self._spawn_timer = self._getSpawnWait() // 2
         enemy_image0 = pygame.image.load(constants.ENEMY0).convert()
@@ -175,19 +173,15 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_input['down'] = 1
             # testing
             elif event.key == pygame.K_1:
-                self._can_blast = True
                 self._player_charge_slowdown_timer = 0
                 self._charge = 0.2499
             elif event.key == pygame.K_2:
-                self._can_blast = True
                 self._player_charge_slowdown_timer = 0
                 self._charge = 0.4999
             elif event.key == pygame.K_3:
-                self._can_blast = True
                 self._player_charge_slowdown_timer = 0
                 self._charge = 0.7499
             elif event.key == pygame.K_4:
-                self._can_blast = True
                 self._player_charge_slowdown_timer = 0
                 self._charge = 0.9999
         elif event.type == pygame.KEYUP:
@@ -349,7 +343,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # charging
         self._blasting -= dt
         self._blasting = max(0, self._blasting)
-        if self._can_blast:
+        if self._blasting == 0:
             threshold = 0.0
             shake_timer_reset = 0
             if self._charge < 0.25:
@@ -380,7 +374,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if self._charge >= threshold > self._getSlowdownAmount():
                 # kick off blast here
                 self._blasting = int(threshold * self.MAX_BLAST_TIME)
-                self._can_blast = False
                 self._charge = 0
                 self._bar_shake_timer = None
                 self._player_charge_slowdown_timer = 0
@@ -390,19 +383,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 else:
                     self._bar_shake_timer = shake_timer_reset
                     self._setShake()
-        # killing
-        if self._blasting > 0:
-            kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite)]
-            for sprite in kill_sprites:
-                sprite.kill()
-        # don't spawn while killing
-        else:
             # spawning
             self._spawn_timer -= dt
             self._spawn_timer = max(0, self._spawn_timer)
             if self._spawn_timer <= 0:
                 self._spawnMonster()
-        # somehow self._can_blast must be set true again later
+        # killing
+        if self._blasting > 0:
+            kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite)]
+            for sprite in kill_sprites:
+                sprite.kill()
 
     def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite):
         level = self._getBlastLevel()
