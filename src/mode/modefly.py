@@ -155,6 +155,23 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_input['up'] = 1
             elif event.key in self.KEYS_DOWN:
                 self._player_input['down'] = 1
+            # testing
+            elif event.key == pygame.K_1:
+                self._can_blast = True
+                self._player_charge_slowdown_timer = 0
+                self._charge = 0.2499
+            elif event.key == pygame.K_2:
+                self._can_blast = True
+                self._player_charge_slowdown_timer = 0
+                self._charge = 0.4999
+            elif event.key == pygame.K_3:
+                self._can_blast = True
+                self._player_charge_slowdown_timer = 0
+                self._charge = 0.7499
+            elif event.key == pygame.K_4:
+                self._can_blast = True
+                self._player_charge_slowdown_timer = 0
+                self._charge = 0.9999
         elif event.type == pygame.KEYUP:
             if event.key in self.KEYS_LEFT:
                 self._player_input['left'] = 0
@@ -224,7 +241,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     def _spawnMonster(self):
         level = self._enemy_level
         if random.random() < 0.15:
-            # 10% chance of higher level
             level = min(4, level + 1)
         enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), level)
         self._all_sprites.add(enemy)
@@ -368,12 +384,66 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 else:
                     self._bar_shake_timer = shake_timer_reset
                     self._setShake()
-        # somehow self._can_blast must be set true again later
-        # blasting if self._blasting > 0
+        # spawning
         self._spawn_timer -= dt
         self._spawn_timer = max(0, self._spawn_timer)
         if self._spawn_timer <= 0:
             self._spawnMonster()
+        # killing
+        if self._blasting > 0:
+            level = self._getBlastLevel()
+            kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite, level)]
+            for sprite in kill_sprites:
+                sprite.kill()
+        # somehow self._can_blast must be set true again later
+
+    def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite, level: int):
+        if isinstance(sprite, Enemy) and sprite.level > level:
+            return False
+        if self._player_ship.rect.right > sprite.rect.right:
+            # to left of start of beam
+            return False
+        beam_rect = self._getBeamRect(level)
+        result = self._isSpriteDeadSection(sprite, beam_rect)
+        if result is None:
+            return False
+        if result is True:
+            return True
+        for i in range(7):
+            # distance from player = self.BEAM_HALF_HEIGHT * 2
+            new_rect = pygame.Rect(
+                # 1 / 8th closer per iteration
+                beam_rect.x - self.BEAM_HALF_HEIGHT // 4 * (1 + i),
+                beam_rect.y + beam_rect.height // 16 * (1 + i),
+                beam_rect.width,
+                beam_rect.height - beam_rect.height // 8 * (1 + i),
+            )
+            result = self._isSpriteDeadSection(sprite, new_rect)
+            if result is None:
+                return False
+            if result is True:
+                return True
+        return False
+
+    @staticmethod
+    def _isSpriteDeadSection(sprite: pygame.sprite.DirtySprite, beam_rect: pygame.Rect):
+        # right is to right of beam start
+        if sprite.rect.bottom <= beam_rect.top or sprite.rect.top >= beam_rect.bottom:
+            # entirely outside of beam top and bottom
+            return None
+        if sprite.rect.centerx >= beam_rect.left:
+            # center is to right of main beam
+            return True
+        # center is to left of main beam
+        if beam_rect.top > sprite.rect.centery > beam_rect.bottom:
+            # center is within beam start section
+            if not isinstance(sprite, Enemy):
+                # this is close enough to destroy bullets
+                return True
+            if sprite.rect.right > beam_rect.left:
+                # touching main beam with right half of circle
+                return True
+        return False
 
     def _updatePreDraw(self, screen):
         # star one-per-frame updates
@@ -393,6 +463,14 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
 
     def _getBlastLevel(self):
         return 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
+
+    def _getBeamRect(self, size: int):
+        return pygame.Rect(
+            self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
+            self._player_ship.rect.centery - self.BEAM_HALF_HEIGHT * size,
+            self.SPACE_WIDTH - self._player_ship.rect.right - self.BEAM_HALF_HEIGHT * 2,
+            self.BEAM_HALF_HEIGHT * 2 * size
+        )
 
     def _drawPostSprites(self, screen):
         if self._blasting > 0:
@@ -422,15 +500,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                         ),
                     )
                 )
-                screen.fill(
-                    color,
-                    (
-                        self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
-                        self._player_ship.rect.centery - self.BEAM_HALF_HEIGHT * size,
-                        self.SPACE_WIDTH - self._player_ship.rect.right - self.BEAM_HALF_HEIGHT * 2,
-                        self.BEAM_HALF_HEIGHT * 2 * size
-                    )
-                )
+                screen.fill(color, self._getBeamRect(size))
 
     def _drawBarMarks(self, screen: pygame.surface.Surface, color, pos_x: int, width: int):
         screen.fill(
@@ -444,6 +514,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         )
 
     def _drawPostCamera(self, screen):
+        draw_safety_marks = False
+        visible_charge = max(0.0, self._charge)
         # bar border
         screen.fill(
             self.BAR_BORDER_COLOR,
@@ -454,23 +526,25 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self.BAR_BORDER_HEIGHT
             )
         )
-        # slowdown bar
-        screen.fill(
-            self.BAR_SLOWDOWN_COLOR,
-            (
-                self.BAR_OFFSET + self._bar_shake[0],
-                constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
-                self.BAR_WIDTH * self._getSlowdownAmount(),
-                self.BAR_BORDER_HEIGHT
+        if self._blasting > 0:
+            visible_charge = self._blasting / self.MAX_BLAST_TIME
+        else:
+            # slowdown bar
+            screen.fill(
+                self.BAR_SLOWDOWN_COLOR,
+                (
+                    self.BAR_OFFSET + self._bar_shake[0],
+                    constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
+                    self.BAR_WIDTH * self._getSlowdownAmount(),
+                    self.BAR_BORDER_HEIGHT
+                )
             )
-        )
-        draw_safety_marks = False
-        if self._charge < 0.25:
-            draw_safety_marks = self._getSlowdownAmount() >= 0.25
-        elif self._charge < 0.5:
-            draw_safety_marks = self._getSlowdownAmount() >= 0.5
-        elif self._charge < 0.75:
-            draw_safety_marks = self._getSlowdownAmount() >= 0.75
+            if self._charge < 0.25:
+                draw_safety_marks = self._getSlowdownAmount() >= 0.25
+            elif self._charge < 0.5:
+                draw_safety_marks = self._getSlowdownAmount() >= 0.5
+            elif self._charge < 0.75:
+                draw_safety_marks = self._getSlowdownAmount() >= 0.75
         if draw_safety_marks:
             screen.fill(
                 self.BAR_SLOWDOWN_COLOR,
@@ -501,7 +575,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             )
         )
         # filled bar
-        visible_charge = max(0.0, self._charge)
         screen.fill(
             gameutility.getBarColor(visible_charge),
             (
