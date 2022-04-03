@@ -1,4 +1,4 @@
-GAME_NAME_HERE
+Ready, uNsTeAdY, FIRE!
 
 
 Files and Folders:
@@ -18,6 +18,8 @@ Files and Folders:
 
 
 Controls:
+  levels
+    - move around with ARROWS, WASD, even D-PAD or STICKS on a controller
   always
     - bring up the pause menu with ESC
     - take a screenshot with F12
@@ -25,7 +27,12 @@ Controls:
 
 
 Gameplay:
-
+Change directions to increase your charge slowdown! Keep moving or your
+slowdown amount will quickly decrease! When your charge reaches a mark that
+your slowdown amount is below, you'll automatically fire. If you fire and
+you're not able to hit an enemy, you lose! Make sure to prevent yourself from
+firing until you have a high enough charge to deal with the enemies in front
+of you! Explained better in game.
 
 
 Notes:
