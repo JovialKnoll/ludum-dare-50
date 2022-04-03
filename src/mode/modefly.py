@@ -43,7 +43,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6
     BEAM_HALF_HEIGHT = 32
-    SPAWN_WAIT = 1000
+    SPAWN_WAIT = 4000
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -127,7 +127,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._blasting = 0
         self._can_blast = True
 
-        self._spawn_timer = self.SPAWN_WAIT
+        self._spawn_timer = self.SPAWN_WAIT // 2
         enemy_image0 = pygame.image.load(constants.ENEMY0).convert()
         enemy_image0.set_colorkey(constants.COLORKEY)
         enemy_image1 = pygame.image.load(constants.ENEMY1).convert()

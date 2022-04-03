@@ -29,18 +29,18 @@ class Enemy(jovialengine.AnimSprite):
         if bool(random.getrandbits(1)):
             self.addPosRel(
                 random.choice(self.MOVEMENT_OPTIONS),
-                random.randint(900, 1100),
+                random.randint(1900, 2100),
                 (-168, 0)
             )
         else:
             self.addPosAbs(
                 random.choice(self.MOVEMENT_OPTIONS),
-                random.randint(900, 1100),
+                random.randint(1900, 2100),
                 (504, 180)
             )
         self.addPosAbs(
             random.choice(self.MOVEMENT_OPTIONS),
-            random.randint(450, 550),
+            random.randint(1450, 1550),
             (504, random.randint(16 + self.rect.height // 2, 360 - 16 - self.rect.height // 2)),
             callback=self._animCallback
         )
@@ -50,7 +50,7 @@ class Enemy(jovialengine.AnimSprite):
             self.kill()
         else:
             movement = random.choice(self.MOVEMENT_OPTIONS)
-            timing = random.randint(950, 1050)
+            timing = random.randint(1950, 2050)
             distance = random.randint(84, 168)
             self.addPosRel(
                 movement,
