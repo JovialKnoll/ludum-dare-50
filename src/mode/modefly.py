@@ -168,11 +168,17 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             type(self).__name__ + "._getEnemyLevel(self)"
         )
 
-    def _FailedBlast(self):
+    def _failedBlast(self):
         self.next_mode = mode.ModeFailBlast()
 
-    def _FailedDied(self):
+    def _failedDied(self):
         self.next_mode = mode.ModeFailDeath()
+
+    @abc.abstractmethod
+    def _success(self):
+        raise NotImplementedError(
+            type(self).__name__ + "._success(self)"
+        )
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -367,7 +373,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             # if just finished blasting
             if old_blasting > 0:
                 if self._blast_kill_count == 0:
-                    self._FailedBlast()
+                    self._failedBlast()
+                elif self._kill_count_down <= 0:
+                    self._success()
                 self._blast_kill_count = 0
             # charging
             threshold = 0.0
@@ -420,7 +428,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             self._enemy_group,
             collided=lambda sprite1, sprite2: pygame.sprite.collide_mask(sprite1, sprite2) is not None
         ):
-            self._FailedDied()
+            self._failedDied()
         # spawning
         self._spawn_timer -= dt
         self._spawn_timer = max(0, self._spawn_timer)

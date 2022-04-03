@@ -3,6 +3,9 @@ from .modeopeningpause import ModeOpeningPause
 from .modeopening0 import ModeOpening0
 from .modeopening1 import ModeOpening1
 from .modeopening2 import ModeOpening2
+from .modepre1 import ModePre1
+from .modepre2 import ModePre2
+from .modewin import ModeWin
 from .modefailblast import ModeFailBlast
 from .modefaildeath import ModeFailDeath
 from .modefly import ModeFly

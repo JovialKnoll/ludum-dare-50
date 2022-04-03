@@ -27,3 +27,6 @@ class ModeFly1(mode.ModeFly):
         if random.random() < 0.15:
             level = min(4, level + 1)
         return level
+
+    def _success(self):
+        self.next_mode = mode.ModePre2()

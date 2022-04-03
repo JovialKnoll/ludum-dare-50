@@ -18,3 +18,6 @@ class ModeFly0(mode.ModeFly):
         if self._kill_count_down < self._getKillAmount():
             return 2
         return 1
+
+    def _success(self):
+        self.next_mode = mode.ModePre1()

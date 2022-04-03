@@ -4,7 +4,7 @@ import constants
 import mode
 
 
-class ModeOpening2(mode.ModeOpeningPause):
+class ModeWin(mode.ModeOpeningPause):
     __slots__ = (
     )
 
@@ -15,13 +15,15 @@ class ModeOpening2(mode.ModeOpeningPause):
             self._background,
             (constants.SCREEN_SIZE[0] // 4, constants.SCREEN_SIZE[1] // 4),
             constants.SCREEN_SIZE[0] // 2,
-            "opening explainer string",
+            "WAVE 3 COMPLETED\n"
+            + "\nYou're an inspiration to us all."
+            + "\nNow let's get you out of that ship before the dang thing explodes.",
             constants.WHITE,
             constants.BLACK
         )
 
     def _switchMode(self):
-        self.next_mode = mode.ModeFly0()
+        self.next_mode = mode.ModeOpening0()
 
     def _whenReady(self):
         jovialengine.shared.font_wrap.renderToCentered(
