@@ -24,6 +24,8 @@ class ModeFly2(mode.ModeFly):
             level = 3
         elif self._kill_count_down <= 28:
             level = 2
+        if random.random() < 0.25:
+            level = max(1, level - 1)
         if random.random() < 0.2:
             level = min(4, level + 1)
         return level

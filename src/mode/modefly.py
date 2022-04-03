@@ -593,8 +593,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         if self._blasting > 0:
             visible_charge = self._blasting / self.MAX_BLAST_TIME
             text = str(self._blast_kill_count) + " BLAST KILL COMBO"
-            # if self._blast_kill_count == 0:
-            #     text = "BLAST KILL COMBO"
             text_width = jovialengine.shared.font_wrap.font.size(text)[0]
             jovialengine.shared.font_wrap.renderTo(
                 screen,

@@ -20,8 +20,12 @@ class ModeFly1(mode.ModeFly):
         level = 1
         if self._kill_count_down <= 4:
             level = 4
+            if random.random() < 0.25:
+                level = 3
         elif self._kill_count_down <= 8:
             level = 3
+            if random.random() < 0.25:
+                level = 2
         elif self._kill_count_down <= 12:
             level = 2
         if random.random() < 0.15:
