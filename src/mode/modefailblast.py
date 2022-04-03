@@ -19,7 +19,7 @@ class ModeFailBlast(mode.ModeOpeningPause):
             self._background,
             (constants.SCREEN_SIZE[0] // 8, constants.SCREEN_SIZE[1] // 8),
             constants.SCREEN_SIZE[0] // 2 + constants.SCREEN_SIZE[0] // 4,
-            "blast fail string",
+            "Your ship exploded!\n\nNext time make sure to only fire when you can hit a Space Beast with enough power.",
             constants.WHITE,
             constants.BLACK
         )

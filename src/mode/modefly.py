@@ -174,9 +174,11 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         )
 
     def _failedBlast(self):
+        self._stopMixer()
         self.next_mode = mode.ModeFailBlast()
 
     def _failedDied(self):
+        self._stopMixer()
         self.next_mode = mode.ModeFailDeath()
 
     @abc.abstractmethod
@@ -373,6 +375,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 if self._blast_kill_count == 0:
                     self._failedBlast()
                 elif self._kill_count_down <= 0:
+                    self._stopMixer()
                     self._success()
                 self._blast_kill_count = 0
             # charging

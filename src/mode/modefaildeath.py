@@ -19,7 +19,7 @@ class ModeFailDeath(mode.ModeOpeningPause):
             self._background,
             (constants.SCREEN_SIZE[0] // 8, constants.SCREEN_SIZE[1] // 8),
             constants.SCREEN_SIZE[0] // 2 + constants.SCREEN_SIZE[0] // 4,
-            "death fail string",
+            "Your ship exploded!\n\nNext time avoid the Space Beasts.",
             constants.WHITE,
             constants.BLACK
         )
