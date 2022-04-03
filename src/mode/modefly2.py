@@ -1,5 +1,8 @@
 import random
 
+import pygame
+
+import constants
 import mode
 
 
@@ -9,6 +12,8 @@ class ModeFly2(mode.ModeFly):
 
     def __init__(self):
         super().__init__()
+        pygame.mixer.music.load(constants.MUSIC2)
+        pygame.mixer.music.play(-1)
 
     def _getSpawnWait(self):
         return 2000

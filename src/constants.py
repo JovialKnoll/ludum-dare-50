@@ -51,6 +51,9 @@ TITLE_SOUND = os.path.join(SOUND_DIRECTORY, 'title.ogg')
 JOVIAL_SOUND = os.path.join(SOUND_DIRECTORY, 'jovial.ogg')
 
 MUSIC_DIRECTORY = os.path.join(SOUND_DIRECTORY, 'music')
+MUSIC0 = os.path.join(MUSIC_DIRECTORY, 'music0.ogg')
+MUSIC1 = os.path.join(MUSIC_DIRECTORY, 'music1.ogg')
+MUSIC2 = os.path.join(MUSIC_DIRECTORY, 'music2.ogg')
 
 VERSION_TEXT = os.path.join(TEXT_DIRECTORY, 'version.txt')
 
