@@ -44,7 +44,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6
     BEAM_HALF_HEIGHT = 32
-    SPAWN_WAIT = 3000
+    SPAWN_WAIT = 2000
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -70,6 +70,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_enemy_images',
         '_enemy_level',
         '_enemy_count',
+        '_kill_count',
     )
 
     def __init__(self):
@@ -140,6 +141,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._enemy_images = (enemy_image0, enemy_image1, enemy_image2)
         self._enemy_level = 1
         self._enemy_count = 0
+        self._kill_count = 0
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -398,16 +400,20 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # somehow self._can_blast must be set true again later
 
     def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite, level: int):
-        if isinstance(sprite, Enemy) and sprite.level > level:
+        #self._kill_count
+        is_enemy = isinstance(sprite, Enemy)
+        if is_enemy and sprite.level > level:
             return False
         if self._player_ship.rect.right > sprite.rect.right:
             # to left of start of beam
             return False
         beam_rect = self._getBeamRect(level)
-        result = self._isSpriteDeadSection(sprite, beam_rect)
+        result = self._isSpriteDeadSection(sprite, beam_rect, is_enemy)
         if result is None:
             return False
         if result is True:
+            if is_enemy:
+                self._kill_count += 1
             return True
         for i in range(7):
             # distance from player = self.BEAM_HALF_HEIGHT * 2
@@ -418,15 +424,17 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 beam_rect.width,
                 beam_rect.height - beam_rect.height // 8 * (1 + i),
             )
-            result = self._isSpriteDeadSection(sprite, new_rect)
+            result = self._isSpriteDeadSection(sprite, new_rect, is_enemy)
             if result is None:
                 return False
             if result is True:
+                if is_enemy:
+                    self._kill_count += 1
                 return True
         return False
 
     @staticmethod
-    def _isSpriteDeadSection(sprite: pygame.sprite.DirtySprite, beam_rect: pygame.Rect):
+    def _isSpriteDeadSection(sprite: pygame.sprite.DirtySprite, beam_rect: pygame.Rect, is_enemy: bool):
         # right is to right of beam start
         if sprite.rect.bottom <= beam_rect.top or sprite.rect.top >= beam_rect.bottom:
             # entirely outside of beam top and bottom
@@ -437,7 +445,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # center is to left of main beam
         if beam_rect.top > sprite.rect.centery > beam_rect.bottom:
             # center is within beam start section
-            if not isinstance(sprite, Enemy):
+            if not is_enemy:
                 # this is close enough to destroy bullets
                 return True
             if sprite.rect.right > beam_rect.left:
@@ -589,3 +597,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._drawBarMarks(screen, gameutility.getBarColor(0.5), (self.BAR_WIDTH // 2) - 2, 3)
         self._drawBarMarks(screen, gameutility.getBarColor(0.75), (self.BAR_WIDTH // 2) + (self.BAR_WIDTH // 4) - 2, 3)
         self._drawBarMarks(screen, gameutility.getBarColor(1), self.BAR_WIDTH - 3, 3)
+        jovialengine.shared.font_wrap.renderTo(
+            screen,
+            (0, 0),
+            "KILL COUNT: " + str(self._kill_count),
+            constants.WHITE
+        )
