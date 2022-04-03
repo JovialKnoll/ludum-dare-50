@@ -40,7 +40,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_ACCEL = 64 / 1000 / 125
     Y_SPEED_MAX = 288 / 1000
     Y_DECEL = X_DECEL
-    MAX_BLAST_TIME = 1000 * 4
+    MAX_BLAST_TIME = 1000 * 6
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
