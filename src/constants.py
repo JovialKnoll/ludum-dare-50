@@ -47,7 +47,6 @@ ENEMY2 = os.path.join(SPRITES_DIRECTORY, 'enemy2.png')
 MUSIC_DIRECTORY = os.path.join(SOUND_DIRECTORY, 'music')
 
 VERSION_TEXT = os.path.join(TEXT_DIRECTORY, 'version.txt')
-CREDITS_TEXT = os.path.join(TEXT_DIRECTORY, 'credits.txt')
 
 VERSION = ''
 try:
