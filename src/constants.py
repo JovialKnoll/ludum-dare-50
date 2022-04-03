@@ -44,6 +44,8 @@ ENEMY0 = os.path.join(SPRITES_DIRECTORY, 'enemy0.png')
 ENEMY1 = os.path.join(SPRITES_DIRECTORY, 'enemy1.png')
 ENEMY2 = os.path.join(SPRITES_DIRECTORY, 'enemy2.png')
 
+# THUNK = os.path.join(SOUND_DIRECTORY, 'thunk.ogg')
+
 MUSIC_DIRECTORY = os.path.join(SOUND_DIRECTORY, 'music')
 
 VERSION_TEXT = os.path.join(TEXT_DIRECTORY, 'version.txt')
