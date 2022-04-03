@@ -358,16 +358,39 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 # 0, 1, 2, 3
                 # 4, 3, 2, 1 or like 3, 2, 1
                 size = level - i
-                screen.fill(
-                    self._getBarColor((i + 1) * 0.25),
+                color = self._getBarColor((i + 1) * 0.25)
+                # distance out is constants.SCREEN_SIZE // 4
+                pygame.draw.polygon(
+                    screen,
+                    color,
                     (
-                        self._player_ship.rect.right,
+                        (
+                            self._player_ship.rect.right - 1,
+                            self._player_ship.rect.centery,
+                        ),
+                        (
+                            self._player_ship.rect.right - 1,
+                            self._player_ship.rect.centery - 1,
+                        ),
+                        (
+                            self._player_ship.rect.right + constants.SCREEN_SIZE[0] // 8 + 1,
+                            self._player_ship.rect.centery - self._camera.height // 8 * size
+                        ),
+                        (
+                            self._player_ship.rect.right + constants.SCREEN_SIZE[0] // 8 + 1,
+                            self._player_ship.rect.centery + self._camera.height // 8 * size - 1
+                        ),
+                    )
+                )
+                screen.fill(
+                    color,
+                    (
+                        self._player_ship.rect.right + constants.SCREEN_SIZE[0] // 8,
                         self._player_ship.rect.centery - self._camera.height // 8 * size,
-                        self.SPACE_WIDTH - self._player_ship.rect.right,
+                        self.SPACE_WIDTH - self._player_ship.rect.right - constants.SCREEN_SIZE[0] // 8,
                         self._camera.height // 4 * size
                     )
                 )
-        pass
 
     def _drawBarMarks(self, screen: pygame.surface.Surface, color, pos_x: int, width: int):
         screen.fill(
