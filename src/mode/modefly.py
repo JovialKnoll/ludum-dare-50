@@ -59,6 +59,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_player_x',
         '_player_y',
         '_player_charge_slowdown_timer',
+        '_blasting',
+        '_can_blast',
     )
 
     def __init__(self):
@@ -115,6 +117,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_x = 0
         self._player_y = 0
         self._player_charge_slowdown_timer = 0
+
+        self._blasting = 0
+        self._can_blast = True
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -281,44 +286,51 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_charge_slowdown_timer -= dt
         self._player_charge_slowdown_timer = max(0, self._player_charge_slowdown_timer)
         # charging
-        threshold = 0
-        shake_timer_reset = 0
-        if self._charge < 0.25:
-            threshold = 0.25
-            shake_timer_reset = 800
-        elif self._charge < 0.5:
-            threshold = 0.5
-            shake_timer_reset = 400
-        elif self._charge < 0.75:
-            threshold = 0.75
-            shake_timer_reset = 200
-        elif self._charge < 1.0:
-            threshold = 1.0
-            shake_timer_reset = 100
-        charging_amount = dt * self.BASE_CHARGE_SPEED
-        if self._getSlowdownAmount() >= threshold:
-            charging_amount /= 2
-            shake_timer_reset *= 2
-        elif self._player_charge_slowdown_timer > 0:
-            charging_amount *= 3/4
-            shake_timer_reset = shake_timer_reset + shake_timer_reset // 2
-        self._charge = min(1.0, self._charge + charging_amount)
-        if self._bar_shake_timer is not None:
-            if self._bar_shake_timer > 0:
-                self._bar_shake_timer -= dt
-            if self._bar_shake_timer <= 0:
-                self._bar_shake_timer = None
-        if self._charge >= threshold > self._getSlowdownAmount():
-            # kick off blast here
-            self._charge = -0.25
-            self._bar_shake_timer = None
-            self._player_charge_slowdown_timer = 0
-        if self._bar_shake_timer is None:
+        self._blasting -= dt
+        self._blasting = max(0, self._blasting)
+        if self._can_blast:
+            threshold = 0
+            shake_timer_reset = 0
             if self._charge < 0.25:
-                self._bar_shake = (0, 0)
-            else:
-                self._bar_shake_timer = shake_timer_reset
-                self._setShake()
+                threshold = 0.25
+                shake_timer_reset = 0
+            elif self._charge < 0.5:
+                threshold = 0.5
+                shake_timer_reset = 400
+            elif self._charge < 0.75:
+                threshold = 0.75
+                shake_timer_reset = 200
+            elif self._charge < 1.0:
+                threshold = 1.0
+                shake_timer_reset = 100
+            charging_amount = dt * self.BASE_CHARGE_SPEED
+            if self._getSlowdownAmount() >= threshold:
+                charging_amount /= 2
+                shake_timer_reset *= 2
+            elif self._player_charge_slowdown_timer > 0:
+                charging_amount *= 3/4
+                shake_timer_reset = shake_timer_reset + shake_timer_reset // 2
+            self._charge = min(1.0, self._charge + charging_amount)
+            if self._bar_shake_timer is not None:
+                if self._bar_shake_timer > 0:
+                    self._bar_shake_timer -= dt
+                if self._bar_shake_timer <= 0:
+                    self._bar_shake_timer = None
+            if self._charge >= threshold > self._getSlowdownAmount():
+                # kick off blast here
+                self._blasting = int(threshold * 1000)
+                self._can_blast = False
+                self._charge = 0
+                self._bar_shake_timer = None
+                self._player_charge_slowdown_timer = 0
+            if self._bar_shake_timer is None:
+                if self._charge < 0.25:
+                    self._bar_shake = (0, 0)
+                else:
+                    self._bar_shake_timer = shake_timer_reset
+                    self._setShake()
+        # somehow self._can_blast must be set true again later
+        # blasting if self._blasting > 0
 
     def _updatePreDraw(self, screen):
         # star one-per-frame updates
@@ -337,6 +349,24 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_sprites_1.draw(screen)
 
     def _drawPostSprites(self, screen):
+        if self._blasting > 0:
+            # level is 1 to 4 inclusive
+            # max height is self._camera.height
+            level = 1 + (self._blasting - 1) * 4 // 1000
+            left_center = self._player_ship.rect.midright
+            for i in range(level):
+                # 0, 1, 2, 3
+                # 4, 3, 2, 1 or like 3, 2, 1
+                size = level - i
+                screen.fill(
+                    self._getBarColor((i + 1) * 0.25),
+                    (
+                        self.BAR_OFFSET + pos_x + self._bar_shake[0],
+                        constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
+                        width,
+                        self.BAR_BORDER_HEIGHT
+                    )
+                )
         pass
 
     def _drawBarMarks(self, screen: pygame.surface.Surface, color, pos_x: int, width: int):
