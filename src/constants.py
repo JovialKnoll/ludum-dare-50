@@ -29,7 +29,7 @@ SAVE_DIRECTORY = os.path.join(SRC_DIRECTORY, 'saves')
 SCREENSHOT_DIRECTORY = os.path.join(SRC_DIRECTORY, 'screenshots')
 
 CONFIG_FILE = os.path.join(SRC_DIRECTORY, 'config.ini')
-WINDOW_ICON = None#os.path.join(GRAPHICS_DIRECTORY, 'icon.png')
+WINDOW_ICON = os.path.join(GRAPHICS_DIRECTORY, 'icon.png')
 FONT = os.path.join(GRAPHICS_DIRECTORY, 'Roboto-Regular.ttf')
 
 TITLE_FONT = os.path.join(GRAPHICS_DIRECTORY, 'Roboto-Black.ttf')
