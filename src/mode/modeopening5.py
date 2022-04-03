@@ -5,7 +5,7 @@ import constants
 import mode
 
 
-class ModeOpening2(mode.ModeOpening):
+class ModeOpening5(mode.ModeOpening):
     __slots__ = (
     )
 
@@ -16,10 +16,9 @@ class ModeOpening2(mode.ModeOpening):
             self._background,
             (constants.SCREEN_SIZE[0] // 8, constants.SCREEN_SIZE[1] // 8),
             constants.SCREEN_SIZE[0] // 2 + constants.SCREEN_SIZE[0] // 4,
-            "You were flying a recon mission through the territory of the Space Beasts"
-            + " when your ship's cooling system broke down!"
-            + "\n\nOnce you start the engine again it will immediately start overheating!"
-            + "\n\nBut you can't wait here any longer...",
+            "* MOVE YOUR SHIP and CHANGE DIRECTIONS to slow down your ENERGY buildup!"
+            + "\n\n* If your COOLING BAR isn't above the QUARTER MARKS"
+            + " when your ENERGY level reaches them, your ship will FIRE!",
             constants.WHITE,
             constants.BLACK
         )
@@ -43,4 +42,4 @@ class ModeOpening2(mode.ModeOpening):
         )
 
     def _switchMode(self):
-        self.next_mode = mode.ModeOpening3()
+        self.next_mode = mode.ModeOpening6()

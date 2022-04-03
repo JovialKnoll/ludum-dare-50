@@ -36,6 +36,15 @@ class ModeOpening1(mode.ModeOpening):
             constants.WHITE,
             constants.BLACK
         )
+        ship_image = pygame.image.load(constants.SHIP).convert()
+        ship_image.set_colorkey(constants.COLORKEY)
+        ship_rect = ship_image.get_rect()
+        ship_rect.midbottom = (constants.SCREEN_SIZE[0] // 2, constants.SCREEN_SIZE[1] - ship_rect.height)
+        pygame.Surface.blit(
+            self._background,
+            ship_image,
+            ship_rect
+        )
 
     def _switchMode(self):
         self.next_mode = mode.ModeOpening2()
