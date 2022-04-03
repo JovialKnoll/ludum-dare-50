@@ -72,3 +72,4 @@ class Enemy(jovialengine.AnimSprite):
     def update(self, *args):
         super().update(args[0])
         # shooting, maybe checking for death goes here?
+        # lol might not get to projectiles

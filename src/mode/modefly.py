@@ -69,6 +69,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_enemy_images',
         '_enemy_mask',
         '_enemy_count',
+        '_enemy_group',
         '_kill_count_down',
         '_blast_kill_count',
     )
@@ -143,6 +144,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._enemy_images = (enemy_image0, enemy_image1, enemy_image2)
         self._enemy_mask = pygame.mask.from_surface(enemy_image0)
         self._enemy_count = 0
+        self._enemy_group = pygame.sprite.LayeredDirty()
+
         self._kill_count_down = self._getKillAmount()
         self._blast_kill_count = 0
 
@@ -169,6 +172,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         pass
 
     def _FailedDied(self):
+        print("DEAD")
         # died fail
         pass
 
@@ -268,6 +272,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     def _spawnMonster(self):
         enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), self._enemy_mask, self._getEnemyLevel())
         self._all_sprites.add(enemy)
+        self._enemy_group.add(enemy)
         self._spawn_timer = self._getSpawnWait()
         self._enemy_count += 1
 
@@ -408,9 +413,16 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                     self._setShake()
         # killing
         if self._blasting > 0:
-            kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite)]
+            kill_sprites = [sprite for sprite in self._enemy_group if self._isSpriteDead(sprite)]
             for sprite in kill_sprites:
                 sprite.kill()
+        # check for death
+        if pygame.sprite.spritecollideany(
+            self._player_ship,
+            self._enemy_group,
+            collided=lambda sprite1, sprite2: pygame.sprite.collide_mask(sprite1, sprite2) is not None
+        ):
+            self._FailedDied()
         # spawning
         self._spawn_timer -= dt
         self._spawn_timer = max(0, self._spawn_timer)
