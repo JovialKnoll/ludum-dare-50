@@ -41,6 +41,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_SPEED_MAX = 288 / 1000
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6
+    BEAM_HALF_HEIGHT = 32
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -351,44 +352,39 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
 
     def _drawPostSprites(self, screen):
         if self._blasting > 0:
-            # level is 1 to 4 inclusive
-            # max height is self._camera.height
             level = 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
             for i in range(level):
-                # 0, 1, 2, 3
-                # 4, 3, 2, 1 or like 3, 2, 1
                 size = level - i
                 color = self._getBarColor((i + 1) * 0.25)
-                # distance out is constants.SCREEN_SIZE // 4
                 pygame.draw.polygon(
                     screen,
                     color,
                     (
                         (
                             self._player_ship.rect.right - 1,
-                            self._player_ship.rect.centery,
-                        ),
-                        (
-                            self._player_ship.rect.right - 1,
                             self._player_ship.rect.centery - 1,
                         ),
                         (
-                            self._player_ship.rect.right + constants.SCREEN_SIZE[0] // 8 + 1,
-                            self._player_ship.rect.centery - self._camera.height // 8 * size
+                            self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
+                            self._player_ship.rect.centery - self.BEAM_HALF_HEIGHT * size
                         ),
                         (
-                            self._player_ship.rect.right + constants.SCREEN_SIZE[0] // 8 + 1,
-                            self._player_ship.rect.centery + self._camera.height // 8 * size - 1
+                            self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
+                            self._player_ship.rect.centery + self.BEAM_HALF_HEIGHT * size - 1
+                        ),
+                        (
+                            self._player_ship.rect.right - 1,
+                            self._player_ship.rect.centery,
                         ),
                     )
                 )
                 screen.fill(
                     color,
                     (
-                        self._player_ship.rect.right + constants.SCREEN_SIZE[0] // 8,
-                        self._player_ship.rect.centery - self._camera.height // 8 * size,
-                        self.SPACE_WIDTH - self._player_ship.rect.right - constants.SCREEN_SIZE[0] // 8,
-                        self._camera.height // 4 * size
+                        self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
+                        self._player_ship.rect.centery - self.BEAM_HALF_HEIGHT * size,
+                        self.SPACE_WIDTH - self._player_ship.rect.right - self.BEAM_HALF_HEIGHT * 2,
+                        self.BEAM_HALF_HEIGHT * 2 * size
                     )
                 )
 
