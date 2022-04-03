@@ -44,7 +44,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6
     BEAM_HALF_HEIGHT = 32
-    SPAWN_WAIT = 2000
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -131,7 +130,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._blasting = 0
         self._can_blast = True
 
-        self._spawn_timer = self.SPAWN_WAIT // 2
+        self._spawn_timer = self._getSpawnWait() // 2
         enemy_image0 = pygame.image.load(constants.ENEMY0).convert()
         enemy_image0.set_colorkey(constants.COLORKEY)
         enemy_image1 = pygame.image.load(constants.ENEMY1).convert()
@@ -142,6 +141,12 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._enemy_level = 1
         self._enemy_count = 0
         self._kill_count = 0
+
+    @abc.abstractmethod
+    def _getSpawnWait(self):
+        raise NotImplementedError(
+            type(self).__name__ + "._getSpawnWait(self)"
+        )
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -256,7 +261,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         elif self._enemy_count == 30:
             # win against this wave?
             pass
-        self._spawn_timer = self.SPAWN_WAIT
+        self._spawn_timer = self._getSpawnWait()
 
     def _setShake(self):
         if self._bar_shake == (0, 0):

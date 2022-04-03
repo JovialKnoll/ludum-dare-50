@@ -1,7 +1,7 @@
 from .modefly import ModeFly
 
 
-class ModeFly0(ModeFly):
+class ModeFly2(ModeFly):
     __slots__ = (
     )
 
@@ -9,4 +9,4 @@ class ModeFly0(ModeFly):
         super().__init__()
 
     def _getSpawnWait(self):
-        return 3000
+        return 2000
