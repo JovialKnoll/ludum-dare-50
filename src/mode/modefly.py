@@ -389,17 +389,19 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 else:
                     self._bar_shake_timer = shake_timer_reset
                     self._setShake()
-        # spawning
-        self._spawn_timer -= dt
-        self._spawn_timer = max(0, self._spawn_timer)
-        if self._spawn_timer <= 0:
-            self._spawnMonster()
         # killing
         if self._blasting > 0:
             level = self._getBlastLevel()
             kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite, level)]
             for sprite in kill_sprites:
                 sprite.kill()
+        # don't spawn while killing
+        else:
+            # spawning
+            self._spawn_timer -= dt
+            self._spawn_timer = max(0, self._spawn_timer)
+            if self._spawn_timer <= 0:
+                self._spawnMonster()
         # somehow self._can_blast must be set true again later
 
     def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite, level: int):
