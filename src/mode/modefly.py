@@ -368,7 +368,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 charging_amount /= 2
                 shake_timer_reset *= 2
             elif self._player_charge_slowdown_timer > 0:
-                charging_amount *= 3/4
+                charging_amount *= 3 / 4
                 shake_timer_reset = shake_timer_reset + shake_timer_reset // 2
             self._charge = min(1.0, self._charge + charging_amount)
             if self._bar_shake_timer is not None:
@@ -411,6 +411,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         if sprite.rect.right < self._player_ship.rect.right:
             # to left of start section
             return False
+        # check straight line out from ship
+        if sprite.rect.top > self._player_ship.rect.centery > sprite.rect.bottom:
+            return True
         for i in range(level):
             size = level - i
             beam_rect = self._getBeamRect(size)
@@ -423,7 +426,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 return True
         return False
 
-    def _isSpriteDeadSection(self, sprite: pygame.sprite.DirtySprite, beam_rect: pygame.Rect, is_enemy: bool, level: int):
+    def _isSpriteDeadSection(self, sprite: pygame.sprite.DirtySprite, beam_rect: pygame.Rect, is_enemy: bool,
+                             level: int):
         if is_enemy and level < sprite.level:
             return False
         # right is to right of beam start
@@ -442,9 +446,31 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if sprite.rect.right >= beam_rect.left:
                 # touching main beam with right half of circle
                 return True
-            if sprite.rect.left > self._player_ship.rect.right:
+            if sprite.rect.centerx > self._player_ship.rect.right:
                 # inside start section
-                pass
+                return self._doesLineHitCircle(
+                    (
+                        self._player_ship.rect.right - 1,
+                        self._player_ship.rect.centery - 1,
+                    ),
+                    beam_rect.topleft,
+                    sprite.rect.center,
+                    sprite.rect.width // 2
+                ) or self._doesLineHitCircle(
+                    (
+                        beam_rect.left,
+                        beam_rect.bottom - 1
+                    ),
+                    (
+                        self._player_ship.rect.right - 1,
+                        self._player_ship.rect.centery,
+                    ),
+                    sprite.rect.center,
+                    sprite.rect.width // 2
+                )
+        return False
+
+    def _doesLineHitCircle(self, point1, point2, center, radius):
         return False
 
     def _updatePreDraw(self, screen):
@@ -467,6 +493,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             for i in range(level):
                 size = level - i
                 color = gameutility.getBarColor((i + 1) * 0.25)
+                beam_rect = self._getBeamRect(size)
                 pygame.draw.polygon(
                     screen,
                     color,
@@ -475,13 +502,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                             self._player_ship.rect.right - 1,
                             self._player_ship.rect.centery - 1,
                         ),
+                        beam_rect.topleft,
                         (
-                            self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
-                            self._player_ship.rect.centery - self.BEAM_HALF_HEIGHT * size
-                        ),
-                        (
-                            self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
-                            self._player_ship.rect.centery + self.BEAM_HALF_HEIGHT * size - 1
+                            beam_rect.left,
+                            beam_rect.bottom - 1
                         ),
                         (
                             self._player_ship.rect.right - 1,
@@ -489,7 +513,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                         ),
                     )
                 )
-                screen.fill(color, self._getBeamRect(size))
+                screen.fill(color, beam_rect)
 
     def _getBlastLevel(self):
         return 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
