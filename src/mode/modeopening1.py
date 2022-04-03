@@ -38,4 +38,4 @@ class ModeOpening1(mode.ModeOpening):
         )
 
     def _switchMode(self):
-        self.next_mode = mode.ModeFly0()
+        self.next_mode = mode.ModeOpening2()

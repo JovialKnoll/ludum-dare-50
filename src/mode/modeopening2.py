@@ -1,10 +1,11 @@
+import pygame
 import jovialengine
 
 import constants
 import mode
 
 
-class ModeFailBlast(mode.ModeOpeningPause):
+class ModeOpening2(mode.ModeOpeningPause):
     __slots__ = (
     )
 
@@ -15,7 +16,7 @@ class ModeFailBlast(mode.ModeOpeningPause):
             self._background,
             (constants.SCREEN_SIZE[0] // 4, constants.SCREEN_SIZE[1] // 4),
             constants.SCREEN_SIZE[0] // 2,
-            "blast fail string",
+            "opening explainer string",
             constants.WHITE,
             constants.BLACK
         )
@@ -30,7 +31,7 @@ class ModeFailBlast(mode.ModeOpeningPause):
                 constants.SCREEN_SIZE[0] // 2,
                 constants.SCREEN_SIZE[1] // 2 + constants.SCREEN_SIZE[1] // 4 + constants.FONT_SIZE // 2
             ),
-            "press any key to try again",
+            "press any key to proceed",
             constants.WHITE,
             constants.BLACK
         )
