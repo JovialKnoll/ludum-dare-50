@@ -43,7 +43,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_SPEED_MAX = 288 / 1000
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6
-    BEAM_HALF_HEIGHT = 32
+    BEAM_HALF_HEIGHT = 16
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -391,8 +391,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                     self._setShake()
         # killing
         if self._blasting > 0:
-            level = self._getBlastLevel()
-            kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite, level)]
+            kill_sprites = [sprite for sprite in self._all_sprites if self._isSpriteDead(sprite)]
             for sprite in kill_sprites:
                 sprite.kill()
         # don't spawn while killing
@@ -404,31 +403,18 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._spawnMonster()
         # somehow self._can_blast must be set true again later
 
-    def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite, level: int):
+    def _isSpriteDead(self, sprite: pygame.sprite.DirtySprite):
+        level = self._getBlastLevel()
         is_enemy = isinstance(sprite, Enemy)
-        if is_enemy and sprite.level > level:
+        if is_enemy and level < sprite.level:
             return False
-        if self._player_ship.rect.right > sprite.rect.right:
-            # to left of start of beam
+        if sprite.rect.right < self._player_ship.rect.right:
+            # to left of start section
             return False
-        beam_rect = self._getBeamRect(level)
-        result = self._isSpriteDeadSection(sprite, beam_rect, is_enemy)
-        if result is None:
-            return False
-        if result is True:
-            if is_enemy:
-                self._kill_count_down -= 1
-            return True
-        for i in range(7):
-            # distance from player = self.BEAM_HALF_HEIGHT * 2
-            new_rect = pygame.Rect(
-                # 1 / 8th closer per iteration
-                beam_rect.x - self.BEAM_HALF_HEIGHT // 4 * (1 + i),
-                beam_rect.y + beam_rect.height // 16 * (1 + i),
-                beam_rect.width,
-                beam_rect.height - beam_rect.height // 8 * (1 + i),
-            )
-            result = self._isSpriteDeadSection(sprite, new_rect, is_enemy)
+        for i in range(level):
+            size = level - i
+            beam_rect = self._getBeamRect(size)
+            result = self._isSpriteDeadSection(sprite, beam_rect, is_enemy, i + 1)
             if result is None:
                 return False
             if result is True:
@@ -437,8 +423,9 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 return True
         return False
 
-    @staticmethod
-    def _isSpriteDeadSection(sprite: pygame.sprite.DirtySprite, beam_rect: pygame.Rect, is_enemy: bool):
+    def _isSpriteDeadSection(self, sprite: pygame.sprite.DirtySprite, beam_rect: pygame.Rect, is_enemy: bool, level: int):
+        if is_enemy and level < sprite.level:
+            return False
         # right is to right of beam start
         if sprite.rect.bottom <= beam_rect.top or sprite.rect.top >= beam_rect.bottom:
             # entirely outside of beam top and bottom
@@ -452,9 +439,12 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if not is_enemy:
                 # this is close enough to destroy bullets
                 return True
-            if sprite.rect.right > beam_rect.left:
+            if sprite.rect.right >= beam_rect.left:
                 # touching main beam with right half of circle
                 return True
+            if sprite.rect.left > self._player_ship.rect.right:
+                # inside start section
+                pass
         return False
 
     def _updatePreDraw(self, screen):
@@ -472,19 +462,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     def _drawPreSprites(self, screen):
         self._star_sprites_0.draw(screen)
         self._star_sprites_1.draw(screen)
-
-    def _getBlastLevel(self):
-        return 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
-
-    def _getBeamRect(self, size: int):
-        return pygame.Rect(
-            self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
-            self._player_ship.rect.centery - self.BEAM_HALF_HEIGHT * size,
-            self.SPACE_WIDTH - self._player_ship.rect.right - self.BEAM_HALF_HEIGHT * 2,
-            self.BEAM_HALF_HEIGHT * 2 * size
-        )
-
-    def _drawPostSprites(self, screen):
         if self._blasting > 0:
             level = self._getBlastLevel()
             for i in range(level):
@@ -513,6 +490,20 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                     )
                 )
                 screen.fill(color, self._getBeamRect(size))
+
+    def _getBlastLevel(self):
+        return 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
+
+    def _getBeamRect(self, size: int):
+        return pygame.Rect(
+            self._player_ship.rect.right + self.BEAM_HALF_HEIGHT * 2,
+            self._player_ship.rect.centery - self.BEAM_HALF_HEIGHT * size,
+            self.SPACE_WIDTH - self._player_ship.rect.right - self.BEAM_HALF_HEIGHT * 2,
+            self.BEAM_HALF_HEIGHT * 2 * size
+        )
+
+    def _drawPostSprites(self, screen):
+        pass
 
     def _drawBarMarks(self, screen: pygame.surface.Surface, color, pos_x: int, width: int):
         screen.fill(
