@@ -194,19 +194,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_input['up'] = 1
             elif event.key in self.KEYS_DOWN:
                 self._player_input['down'] = 1
-            # testing
-            elif event.key == pygame.K_1:
-                self._player_charge_slowdown_timer = 0
-                self._charge = 0.2499
-            elif event.key == pygame.K_2:
-                self._player_charge_slowdown_timer = 0
-                self._charge = 0.4999
-            elif event.key == pygame.K_3:
-                self._player_charge_slowdown_timer = 0
-                self._charge = 0.7499
-            elif event.key == pygame.K_4:
-                self._player_charge_slowdown_timer = 0
-                self._charge = 0.9999
         elif event.type == pygame.KEYUP:
             if event.key in self.KEYS_LEFT:
                 self._player_input['left'] = 0
@@ -291,7 +278,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             self._bar_shake = self.SHAKES[self._current_shake]
 
     def _getSlowdownAmount(self):
-        return self._player_charge_slowdown_timer / self.BASE_CHARGE_SLOWDOWN_TIME
+        return self._player_charge_slowdown_timer / (self.BASE_CHARGE_SLOWDOWN_TIME * 6)
 
     def _update(self, dt):
         # background stars
@@ -334,7 +321,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self._player_vel_y = min(0.0, self._player_vel_y + y_decel)
             self._player_vel_y += y_input * self.Y_ACCEL * dt
         if self._prev_x_input != x_input or self._prev_y_input != y_input:
-            self._player_charge_slowdown_timer = self.BASE_CHARGE_SLOWDOWN_TIME
+            self._player_charge_slowdown_timer = min(
+                self.BASE_CHARGE_SLOWDOWN_TIME * 6,
+                self._player_charge_slowdown_timer + self.BASE_CHARGE_SLOWDOWN_TIME
+            )
             self._prev_x_input = x_input
             self._prev_y_input = y_input
         # cap velocity
@@ -363,6 +353,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._player_ship.rect.y = int(self._player_y)
         # charge slowdown
         self._player_charge_slowdown_timer -= dt
+        if x_input == 0 and y_input == 0:
+            self._player_charge_slowdown_timer -= dt * 5
         self._player_charge_slowdown_timer = max(0, self._player_charge_slowdown_timer)
         # end of blast
         old_blasting = self._blasting

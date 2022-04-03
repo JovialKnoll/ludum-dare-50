@@ -61,6 +61,8 @@ class Enemy(jovialengine.AnimSprite):
         else:
             movement = random.choice(self.MOVEMENT_OPTIONS)
             timing = random.randint(1950, 2050)
+            if self.rect.centerx <= 168:
+                timing //= 4
             distance = random.randint(84, 168)
             y = 0
             if random.random() < 0.25:

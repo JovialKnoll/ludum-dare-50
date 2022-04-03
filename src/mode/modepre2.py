@@ -13,8 +13,8 @@ class ModePre2(mode.ModeOpeningPause):
         self._background.fill(constants.BLACK)
         jovialengine.shared.font_wrap.renderToInside(
             self._background,
-            (constants.SCREEN_SIZE[0] // 4, constants.SCREEN_SIZE[1] // 4),
-            constants.SCREEN_SIZE[0] // 2,
+            (constants.SCREEN_SIZE[0] // 8, constants.SCREEN_SIZE[1] // 8),
+            constants.SCREEN_SIZE[0] // 2 + constants.SCREEN_SIZE[0] // 4,
             "WAVE 2 COMPLETED\n"
             + "\nFantastic work out there pilot."
             + "\nYou're almost at a friendly space station."
