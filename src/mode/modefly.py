@@ -18,7 +18,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     BAR_OFFSET = (BAR_BORDER_HEIGHT - BAR_HEIGHT) // 2
     BAR_BORDER_COLOR = (15, 15, 25)
     BAR_EMPTY_COLOR = (4, 6, 8)
-    BAR_SLOWDOWN_COLOR = (0, 220, 0)
+    BAR_SLOWDOWN_COLOR = (100, 220, 100)
     BASE_CHARGE_SPEED = 1 / 16000
     BASE_CHARGE_SLOWDOWN_TIME = 1000
     STAR_DELAY = 200
@@ -42,6 +42,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6
     BEAM_HALF_HEIGHT = 32
+    SPAWN_WAIT = 1000
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -63,6 +64,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_player_charge_slowdown_timer',
         '_blasting',
         '_can_blast',
+        '_spawn_timer',
     )
 
     def __init__(self):
@@ -122,6 +124,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
 
         self._blasting = 0
         self._can_blast = True
+
+        self._spawn_timer = self.SPAWN_WAIT
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -202,6 +206,12 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             (-self.STAR_DISTANCE, 0)
         )
         self._star_sprites_1.add(star_sprite_1)
+
+    def _spawnMonster(self):
+        # load images for sprites in init
+        # spawn monster here
+        # self._all_sprites.add()
+        self._spawn_timer = self.SPAWN_WAIT
 
     def _setShake(self):
         if self._bar_shake == (0, 0):
@@ -333,6 +343,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                     self._setShake()
         # somehow self._can_blast must be set true again later
         # blasting if self._blasting > 0
+        self._spawn_timer -= dt
+        self._spawn_timer = max(0, self._spawn_timer)
+        if self._spawn_timer <= 0:
+            self._spawnMonster()
 
     def _updatePreDraw(self, screen):
         # star one-per-frame updates
