@@ -46,6 +46,7 @@ ENEMY2 = os.path.join(SPRITES_DIRECTORY, 'enemy2.png')
 
 RAO = os.path.join(SOUND_DIRECTORY, 'rao.ogg')
 BWOM = os.path.join(SOUND_DIRECTORY, 'bwom.ogg')
+EXPLODE = os.path.join(SOUND_DIRECTORY, 'explode.ogg')
 
 MUSIC_DIRECTORY = os.path.join(SOUND_DIRECTORY, 'music')
 

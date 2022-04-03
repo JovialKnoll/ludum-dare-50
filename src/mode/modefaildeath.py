@@ -1,3 +1,4 @@
+import pygame
 import jovialengine
 
 import constants
@@ -10,6 +11,9 @@ class ModeFailDeath(mode.ModeOpeningPause):
 
     def __init__(self):
         super().__init__()
+        sound = pygame.mixer.Sound(constants.EXPLODE)
+        sound.set_volume(0.6)
+        sound.play()
         self._background.fill(constants.BLACK)
         jovialengine.shared.font_wrap.renderToInside(
             self._background,
