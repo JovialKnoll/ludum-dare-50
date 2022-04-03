@@ -40,6 +40,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_ACCEL = 64 / 1000 / 125
     Y_SPEED_MAX = 288 / 1000
     Y_DECEL = X_DECEL
+    MAX_BLAST_TIME = 1000 * 4
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -289,7 +290,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._blasting -= dt
         self._blasting = max(0, self._blasting)
         if self._can_blast:
-            threshold = 0
+            threshold = 0.0
             shake_timer_reset = 0
             if self._charge < 0.25:
                 threshold = 0.25
@@ -318,7 +319,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                     self._bar_shake_timer = None
             if self._charge >= threshold > self._getSlowdownAmount():
                 # kick off blast here
-                self._blasting = int(threshold * 1000)
+                self._blasting = int(threshold * self.MAX_BLAST_TIME)
                 self._can_blast = False
                 self._charge = 0
                 self._bar_shake_timer = None
@@ -352,8 +353,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         if self._blasting > 0:
             # level is 1 to 4 inclusive
             # max height is self._camera.height
-            level = 1 + (self._blasting - 1) * 4 // 1000
-            left_center = self._player_ship.rect.midright
+            level = 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
             for i in range(level):
                 # 0, 1, 2, 3
                 # 4, 3, 2, 1 or like 3, 2, 1
@@ -361,10 +361,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 screen.fill(
                     self._getBarColor((i + 1) * 0.25),
                     (
-                        self.BAR_OFFSET + pos_x + self._bar_shake[0],
-                        constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT,
-                        width,
-                        self.BAR_BORDER_HEIGHT
+                        self._player_ship.rect.right,
+                        self._player_ship.rect.centery - self._camera.height // 8 * size,
+                        self.SPACE_WIDTH - self._player_ship.rect.right,
+                        self._camera.height // 4 * size
                     )
                 )
         pass
