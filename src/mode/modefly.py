@@ -68,6 +68,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         '_can_blast',
         '_spawn_timer',
         '_enemy_images',
+        '_enemy_level',
+        '_enemy_count',
     )
 
     def __init__(self):
@@ -136,6 +138,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         enemy_image2 = pygame.image.load(constants.ENEMY2).convert()
         enemy_image2.set_colorkey(constants.COLORKEY)
         self._enemy_images = (enemy_image0, enemy_image1, enemy_image2)
+        self._enemy_level = 1
+        self._enemy_count = 0
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)
@@ -218,8 +222,22 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         self._star_sprites_1.add(star_sprite_1)
 
     def _spawnMonster(self):
-        enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), 1)
+        level = self._enemy_level
+        if random.random() < 0.15:
+            # 10% chance of higher level
+            level = min(4, level + 1)
+        enemy = Enemy(self._all_sprites, random.choice(self._enemy_images), level)
         self._all_sprites.add(enemy)
+        self._enemy_count += 1
+        if self._enemy_count == 8:
+            self._enemy_level = 2
+        elif self._enemy_count == 16:
+            self._enemy_level = 3
+        elif self._enemy_count == 24:
+            self._enemy_level = 4
+        elif self._enemy_count == 30:
+            # win against this wave?
+            pass
         self._spawn_timer = self.SPAWN_WAIT
 
     def _setShake(self):
