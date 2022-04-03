@@ -1,9 +1,9 @@
 import random
 
-from .modefly import ModeFly
+import mode
 
 
-class ModeFly1(ModeFly):
+class ModeFly1(mode.ModeFly):
     __slots__ = (
     )
 

@@ -2,11 +2,10 @@ import pygame
 import jovialengine
 
 import constants
-from .modeopening import ModeOpening
-from .modefly0 import ModeFly0
+import mode
 
 
-class ModeOpening1(ModeOpening):
+class ModeOpening1(mode.ModeOpening):
     __slots__ = (
     )
 
@@ -39,4 +38,4 @@ class ModeOpening1(ModeOpening):
         )
 
     def _switchMode(self):
-        self.next_mode = ModeFly0()
+        self.next_mode = mode.ModeFly0()

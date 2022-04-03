@@ -2,11 +2,10 @@ import pygame
 import jovialengine
 
 import constants
-from .modeopening import ModeOpening
-from .modeopening1 import ModeOpening1
+import mode
 
 
-class ModeOpening0(ModeOpening):
+class ModeOpening0(mode.ModeOpening):
     _LOGO_TEXT = "JovialKnoll"
 
     __slots__ = (
@@ -34,7 +33,7 @@ class ModeOpening0(ModeOpening):
         )
 
     def _switchMode(self):
-        self.next_mode = ModeOpening1()
+        self.next_mode = mode.ModeOpening1()
 
     def _update(self, dt):
         self._time += dt

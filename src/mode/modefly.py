@@ -7,6 +7,7 @@ import jovialengine
 
 import constants
 import gameutility
+import mode
 from enemy import Enemy
 
 
@@ -168,13 +169,10 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         )
 
     def _FailedBlast(self):
-        # blasted with no kills fail
-        pass
+        self.next_mode = mode.ModeFailBlast()
 
     def _FailedDied(self):
-        print("DEAD")
-        # died fail
-        pass
+        self.next_mode = mode.ModeFailDeath()
 
     def _syncPos(self):
         self._player_x = float(self._player_ship.rect.x)

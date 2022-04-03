@@ -1,7 +1,7 @@
-from .modefly import ModeFly
+import mode
 
 
-class ModeFly0(ModeFly):
+class ModeFly0(mode.ModeFly):
     __slots__ = (
     )
 
