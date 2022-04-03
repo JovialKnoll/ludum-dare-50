@@ -1,9 +1,10 @@
-import sys
-import os
 import random
 
 import jovialengine
-import pygame.sprite
+import pygame
+
+import constants
+import gameutility
 
 
 class Enemy(jovialengine.AnimSprite):
@@ -23,7 +24,15 @@ class Enemy(jovialengine.AnimSprite):
         super().__init__()
         self.sprite_group = sprite_group
         self.level = min(4, level)
-        self.image = image
+        fixed_image = image.copy()
+        new_color = gameutility.getBarColor(level * 0.25)
+        pix_array = pygame.PixelArray(fixed_image)
+        pix_array.replace(
+            constants.ENEMY_COLOR1,
+            new_color
+        )
+        del pix_array
+        self.image = fixed_image
         self.rect = self.image.get_rect()
         self.rect.topleft = (672, random.randint(self.rect.height, 360 - self.rect.height * 2))
         if bool(random.getrandbits(1)):

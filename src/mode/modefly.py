@@ -5,6 +5,7 @@ import pygame
 import jovialengine
 
 import constants
+import gameutility
 from enemy import Enemy
 
 
@@ -43,7 +44,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
     Y_DECEL = X_DECEL
     MAX_BLAST_TIME = 1000 * 6
     BEAM_HALF_HEIGHT = 32
-    SPAWN_WAIT = 4000
+    SPAWN_WAIT = 3000
     __slots__ = (
         '_star_sprites_0',
         '_star_sprites_1',
@@ -380,7 +381,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             level = self._getBlastLevel()
             for i in range(level):
                 size = level - i
-                color = self._getBarColor((i + 1) * 0.25)
+                color = gameutility.getBarColor((i + 1) * 0.25)
                 pygame.draw.polygon(
                     screen,
                     color,
@@ -423,12 +424,6 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self.BAR_BORDER_HEIGHT
             )
         )
-
-    @staticmethod
-    def _getBarColor(charge):
-        bar_color_component = int(charge * 255)
-        bar_color = (bar_color_component, 0, 255 - bar_color_component)
-        return bar_color
 
     def _drawPostCamera(self, screen):
         # bar border
@@ -490,7 +485,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         # filled bar
         visible_charge = max(0.0, self._charge)
         screen.fill(
-            self._getBarColor(visible_charge),
+            gameutility.getBarColor(visible_charge),
             (
                 self.BAR_OFFSET + self._bar_shake[0],
                 constants.SCREEN_SIZE[1] - self.BAR_BORDER_HEIGHT + self.BAR_OFFSET + self._bar_shake[1],
@@ -498,8 +493,8 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                 self.BAR_HEIGHT
             )
         )
-        self._drawBarMarks(screen, self._getBarColor(0), 0, 3)
-        self._drawBarMarks(screen, self._getBarColor(0.25), (self.BAR_WIDTH // 2) - (self.BAR_WIDTH // 4) - 2, 3)
-        self._drawBarMarks(screen, self._getBarColor(0.5), (self.BAR_WIDTH // 2) - 2, 3)
-        self._drawBarMarks(screen, self._getBarColor(0.75), (self.BAR_WIDTH // 2) + (self.BAR_WIDTH // 4) - 2, 3)
-        self._drawBarMarks(screen, self._getBarColor(1), self.BAR_WIDTH - 3, 3)
+        self._drawBarMarks(screen, gameutility.getBarColor(0), 0, 3)
+        self._drawBarMarks(screen, gameutility.getBarColor(0.25), (self.BAR_WIDTH // 2) - (self.BAR_WIDTH // 4) - 2, 3)
+        self._drawBarMarks(screen, gameutility.getBarColor(0.5), (self.BAR_WIDTH // 2) - 2, 3)
+        self._drawBarMarks(screen, gameutility.getBarColor(0.75), (self.BAR_WIDTH // 2) + (self.BAR_WIDTH // 4) - 2, 3)
+        self._drawBarMarks(screen, gameutility.getBarColor(1), self.BAR_WIDTH - 3, 3)

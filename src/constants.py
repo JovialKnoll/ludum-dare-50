@@ -11,6 +11,8 @@ FONT_ANTIALIAS = True
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+ENEMY_COLOR0 = (35, 35, 97)
+ENEMY_COLOR1 = (155, 174, 181)
 
 _location = '.'
 if getattr(sys, 'frozen', False):
