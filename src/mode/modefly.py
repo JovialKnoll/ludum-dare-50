@@ -1,5 +1,6 @@
 import abc
 import random
+import math
 
 import pygame
 import jovialengine
@@ -408,7 +409,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
         is_enemy = isinstance(sprite, Enemy)
         if is_enemy and level < sprite.level:
             return False
-        if sprite.rect.right < self._player_ship.rect.right:
+        if sprite.rect.right <= self._player_ship.rect.right:
             # to left of start section
             return False
         # check straight line out from ship
@@ -446,32 +447,38 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
             if sprite.rect.right >= beam_rect.left:
                 # touching main beam with right half of circle
                 return True
-            if sprite.rect.centerx > self._player_ship.rect.right:
-                # inside start section
-                return self._doesLineHitCircle(
-                    (
-                        self._player_ship.rect.right - 1,
-                        self._player_ship.rect.centery - 1,
-                    ),
-                    beam_rect.topleft,
-                    sprite.rect.center,
-                    sprite.rect.width // 2
-                ) or self._doesLineHitCircle(
-                    (
-                        beam_rect.left,
-                        beam_rect.bottom - 1
-                    ),
-                    (
-                        self._player_ship.rect.right - 1,
-                        self._player_ship.rect.centery,
-                    ),
-                    sprite.rect.center,
-                    sprite.rect.width // 2
-                )
-        return False
+        # inside start section
+        return self._doesLineHitCircle(
+            (
+                self._player_ship.rect.right - 1,
+                self._player_ship.rect.centery - 1,
+            ),
+            beam_rect.topleft,
+            sprite.rect.center,
+            sprite.rect.width // 2
+        ) or self._doesLineHitCircle(
+            (
+                beam_rect.left,
+                beam_rect.bottom - 1
+            ),
+            (
+                self._player_ship.rect.right - 1,
+                self._player_ship.rect.centery,
+            ),
+            sprite.rect.center,
+            sprite.rect.width // 2
+        )
 
-    def _doesLineHitCircle(self, point1, point2, center, radius):
-        return False
+    @staticmethod
+    def _doesLineHitCircle(point1, point2, center, radius):
+        x1, y1 = point1
+        x2, y2 = point2
+        x3, y3 = center
+        dx, dy = x2 - x1, y2 - y1
+        det = dx * dx + dy * dy
+        a = (dy * (y3 - y1) + dx * (x3 - x1)) / det
+        closest_point = (x1 + a * dx, y1 + a * dy)
+        return math.dist(closest_point, center) <= radius
 
     def _updatePreDraw(self, screen):
         # star one-per-frame updates
