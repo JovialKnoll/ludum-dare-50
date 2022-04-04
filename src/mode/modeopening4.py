@@ -17,7 +17,7 @@ class ModeOpening4(mode.ModeOpening):
             (constants.SCREEN_SIZE[0] // 8, constants.SCREEN_SIZE[1] // 8),
             constants.SCREEN_SIZE[0] // 2 + constants.SCREEN_SIZE[0] // 4,
             "Wait! Unless..."
-            + "\n\nWe know the Space Beasts can teleport."
+            + "\n\nThough they are beyond our understanding, we do know the Space Beasts can teleport."
             + " That should absorb any excess energy in the area, preventing your ship from exploding."
             + "\n\nBut they'll only do that if they're in dire danger...",
             constants.WHITE,
