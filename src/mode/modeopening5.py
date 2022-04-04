@@ -17,7 +17,7 @@ class ModeOpening5(mode.ModeOpening):
             (constants.SCREEN_SIZE[0] // 8, constants.SCREEN_SIZE[1] // 8),
             constants.SCREEN_SIZE[0] // 2 + constants.SCREEN_SIZE[0] // 4,
             "* MOVE YOUR SHIP and CHANGE DIRECTIONS to slow down your ENERGY buildup!"
-            + "\n\n* If your COOLING BAR isn't above the QUARTER MARKS"
+            + "\n\n* If your GREEN COOLING BAR isn't above the QUARTER MARKS"
             + " when your ENERGY level reaches them, your ship will FIRE!",
             constants.WHITE,
             constants.BLACK
