@@ -555,7 +555,7 @@ class ModeFly(jovialengine.ModeBase, abc.ABC):
                         ),
                     )
                 )
-                screen.fill(color, beam_rect)
+                screen.fill(color, beam_rect.clip(screen.get_rect()))
 
     def _getBlastLevel(self):
         return 1 + (self._blasting - 1) * 4 // self.MAX_BLAST_TIME
